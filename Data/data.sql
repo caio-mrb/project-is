@@ -1,8 +1,4 @@
 USE SOMIOD;
-<<<<<<< HEAD
-=======
-
->>>>>>> afa1a69cc9bab38189c8122885ddd588a73229ea
 -- Insert into the applications table
 INSERT INTO applications (name, creation_datetime)
 VALUES 
@@ -32,11 +28,7 @@ VALUES
 ('Container10', '2024-12-10T13:15:00', 5);
 
 -- Insert into the records table
-<<<<<<< HEAD
-INSERT INTO records (name, content, creation_datetime, containers_id)
-=======
 INSERT INTO records (name, content, creation_datetime, container_id)
->>>>>>> afa1a69cc9bab38189c8122885ddd588a73229ea
 VALUES 
 ('Record1', 'Data for Record1', '2024-12-01T12:00:00', 1),
 ('Record2', 'Data for Record2', '2024-12-02T12:15:00', 2),
@@ -50,11 +42,7 @@ VALUES
 ('Record10', 'Data for Record10', '2024-12-10T14:15:00', 10);
 
 -- Insert into the notifications table
-<<<<<<< HEAD
-INSERT INTO notifications (name, creation_datetime, containers_id, event_type, endpoint, enabled)
-=======
 INSERT INTO notifications (name, creation_datetime, container_id, event_type, endpoint, enabled)
->>>>>>> afa1a69cc9bab38189c8122885ddd588a73229ea
 VALUES 
 ('Notification1', '2024-12-01T14:00:00', 1, 'C', 'http://example.com/notify1', 1),
 ('Notification2', '2024-12-02T14:15:00', 2, 'D', 'http://example.com/notify2', 1),
