@@ -22,7 +22,7 @@ namespace Api.Controllers
 
             SqlConnection connection = new SqlConnection(connectionString);
 
-            const string queryString = "SELECT * FROM dbo.Prods";
+            const string queryString = "SELECT * FROM dbo.applications";
 
             try
             {
