@@ -1,23 +1,68 @@
-﻿using System;
+﻿using Api.Models;
+using System;
 using System.Collections.Generic;
+using System.Data;
+using System.Data.SqlClient;
 using System.Linq;
-using System.Web;
-using System.Web.Mvc;
+using System.Net;
+using System.Net.Http;
+using System.Web.Http;
 
 namespace Api.Controllers
 {
-    public class ApplicationsController : Controller
+    [RoutePrefix("api/somiod/applications")]
+    public class ApplicationsController : ApiController
     {
-        // GET: Applications
-        public ActionResult Index()
-        {
-            return View();
-        }
+        string connectionString = Api.Properties.Settings.Default.ConnStr;
 
-        // GET: Applications/Details/5
-        public ActionResult Details(int id)
+        [Route("")]
+        public IEnumerable<Application> GetAllApplication()
         {
-            return View();
+            List<Application> applications = new List<Application>();
+
+            SqlConnection connection = new SqlConnection(connectionString);
+
+            const string queryString = "SELECT * FROM dbo.Prods";
+
+            try
+            {
+                connection.Open();
+
+                SqlCommand command = new SqlCommand(queryString, connection);
+
+                SqlDataReader reader = command.ExecuteReader();
+
+                while (reader.Read())
+                {
+                    Application application = new Application
+                    {
+                        Id = (int)reader["Id"],
+                        Name = (string)reader["Name"],
+                        CreationDatetime = (DateTime)reader["CreationDatetime"]
+                    };
+                    applications.Add(application);
+                }
+                reader.Close();
+                connection.Close();
+            }
+            catch (Exception ex)
+            {
+                if (connection.State == System.Data.ConnectionState.Open)
+                    connection.Close();
+                Console.WriteLine(ex.Message);
+            }
+
+            return applications;
+
+        }
+        /*public IHttpActionResult GetApplication(int id)
+        {
+            var product = products.FirstOrDefault((p) => p.Id == id);
+            if (product == null)
+            {
+                return NotFound();
+            }
+            return Ok(product); //Respecting HTTP errors (200 OK)
         }
 
         // GET: Applications/Create
@@ -84,6 +129,6 @@ namespace Api.Controllers
             {
                 return View();
             }
-        }
+        }*/
     }
 }
