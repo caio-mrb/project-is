@@ -1,14 +1,18 @@
 ﻿using Api.Models;
 using System;
 using System.Collections.Generic;
+using System.Data;
+using System.Data.SqlClient;
 using System.Linq;
-using System.Web;
-using System.Web.Mvc;
+using System.Net;
+using System.Net.Http;
+using System.Web.Http;
+
 
 namespace Api.Controllers
 {
     [RoutePrefix("api/somiod/records")]
-    public class RecordsController : Controller
+    public class RecordsController : ApiController
     {
         string connectionString = Api.Properties.Settings.Default.ConnStr;
 
@@ -33,11 +37,11 @@ namespace Api.Controllers
                 {
                     Record record = new Record
                     {
-                        Id = (int)reader["Id"],
-                        Name = (string)reader["Name"],
-                        Content= (string)reader["Content"],
-                        CreationDatetime = reader["CreationDatetime"] == DBNull.Value ? (DateTime?)null : (DateTime)reader["CreationDatetime"],
-                        ContainerId = Id = (int)reader["ContainerId"],
+                        Id = (int)reader["id"],
+                        Name = (string)reader["name"],
+                        Content= (string)reader["content"],
+                        CreationDatetime = (DateTime)(reader["creation_datetime"] == DBNull.Value ? (DateTime?)null : (DateTime)reader["creation_datetime"]),
+                        Parent = (int)reader["parent"],
                     };
                     records.Add(record);
                 }
@@ -52,7 +56,7 @@ namespace Api.Controllers
             }
             return records;
         }
-        [Route("{id:int}")]
+        /*[Route("{id:int}")]
         public IHttpActionResult GetProduct(int id)
         {
 
@@ -145,6 +149,6 @@ namespace Api.Controllers
                 Console.WriteLine(ex.Message);
             }
             return Ok("Produto criado com sucesso!");
-        }
+        }*/
     }
 }

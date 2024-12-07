@@ -16,7 +16,7 @@ namespace Api.Controllers
         string connectionString = Api.Properties.Settings.Default.ConnStr;
 
         [Route("")]
-        public IEnumerable<Application> GetAllApplication()
+        public IEnumerable<Application> GetAllApplications()
         {
             List<Application> applications = new List<Application>();
 
@@ -27,21 +27,26 @@ namespace Api.Controllers
             try
             {
                 connection.Open();
+                Console.WriteLine("Connection opened successfully.");
 
                 SqlCommand command = new SqlCommand(queryString, connection);
 
                 SqlDataReader reader = command.ExecuteReader();
+                Console.WriteLine("Query executed successfully.");
 
                 while (reader.Read())
                 {
+                    Console.WriteLine("Reading a record...");
                     Application application = new Application
                     {
-                        Id = (int)reader["Id"],
-                        Name = (string)reader["Name"],
-                        CreationDatetime = (DateTime)reader["CreationDatetime"]
+                        Id = (int)reader["id"],
+                        Name = (string)reader["name"],
+                        CreationDatetime = (DateTime)reader["creation_datetime"]
                     };
                     applications.Add(application);
                 }
+
+                Console.WriteLine($"Total applications found: {applications.Count}");
                 reader.Close();
                 connection.Close();
             }
