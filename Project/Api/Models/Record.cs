@@ -8,6 +8,6 @@ namespace Api.Models
         public string Name { get; set; }
         public string Content { get; set; }
         public DateTime CreationDatetime { get; set; }
-        public int ContainerId { get; }
+        public int Parent { get; }
     }
 }
