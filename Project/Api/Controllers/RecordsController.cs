@@ -13,9 +13,9 @@ namespace Api.Controllers
         string connectionString = Api.Properties.Settings.Default.ConnStr;
 
         [Route("")]
-        public IEnumerable<Records> GetAllRecords()
+        public IEnumerable<Record> GetAllRecords()
         {
-            List<Product> records = new List<Records>();
+            List<Record> records = new List<Record>();
 
             SqlConnection connection = new SqlConnection(connectionString);
 
