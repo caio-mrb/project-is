@@ -1,4 +1,8 @@
 USE SOMIOD;
+<<<<<<< HEAD
+=======
+
+>>>>>>> bf445e5bc8463fad0db5011753358d22df4c58b3
 -- Insert into the applications table
 INSERT INTO applications (name, creation_datetime)
 VALUES 
