@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
+using System.Linq;
 
 public class DatabaseHandler
 {
@@ -44,6 +45,54 @@ public class DatabaseHandler
             return results;
         }
     }
+
+    public int ExecuteNonQuery(string query, List<SqlParameter> parameters)
+    {
+        using (SqlConnection connection = GetSqlConnection())
+        {
+            SqlCommand command = new SqlCommand(query, connection);
+            command.Parameters.AddRange(parameters.ToArray());
+            command.CommandType = CommandType.Text;
+
+            try
+            {
+                return command.ExecuteNonQuery();
+            }
+            finally
+            {
+                connection.Close();
+            }
+        }
+    }
+
+    public string GenerateUniqueName(string baseName)
+    {
+        int counter = 1;
+
+        while (true)
+        {
+            string candidateName = $"{baseName}{counter}";
+
+            string checkQuery = "SELECT COUNT(1) FROM dbo.applications WHERE name = @name";
+            var parameters = new List<SqlParameter>
+            {
+                new SqlParameter("@name", candidateName)
+            };
+
+            int existingCount = ExecuteQuery(checkQuery,parameters, reader =>
+                (int)reader[0]
+            ).FirstOrDefault();
+
+            if (existingCount == 0)
+            {
+                return candidateName;
+            }
+
+            counter++;
+        }
+    }
+
+
 
     public List<Dictionary<string, object>> ExecuteDynamicQuery(string query, List<SqlParameter> parameters, List<string> columns)
     {
