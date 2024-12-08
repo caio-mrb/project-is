@@ -12,67 +12,45 @@ using System.Xml.Linq;
 
 namespace Api.Controllers
 {
-    [RoutePrefix("api/somiod/{appName}/{contName}")]
+    [RoutePrefix("api/somiod/{appName}/{contName}/notification")]
     public class NotificationsController : ApiController
     {
-        string connectionString = Api.Properties.Settings.Default.ConnStr;
+        private readonly DatabaseHandler _dbHandler = new DatabaseHandler();
 
         [HttpGet]
-        [Route("notification/{notiName}")]
+        [Route("{notiName}")]
         public IHttpActionResult GetNotification(string appName, string contName, string notiName)
         {
-            Notification n = null;
-            SqlConnection connection = null;
-
-            try
+            string query = @"
+                            SELECT * 
+                            FROM dbo.notifications n
+                            JOIN dbo.containers c ON n.parent = c.id
+                            JOIN dbo.applications a ON c.parent = a.id
+                            WHERE a.name = @appName AND c.name = @contName AND n.name = @notiName";
+            var parameters = new List<SqlParameter>
             {
-                connection = new SqlConnection(connectionString);
-                connection.Open();
+                new SqlParameter("@appName", appName),
+                new SqlParameter("@contName", contName),
+                new SqlParameter("@notiName", notiName)
+            };
 
-                SqlCommand command = new SqlCommand();
-                command.CommandText = @"
-                    SELECT *
-                    FROM dbo.notifications n
-                    JOIN dbo.containers c ON n.parent = c.id
-                    JOIN dbo.applications a ON c.parent = a.id
-                    WHERE a.name = @appName AND c.name = @contName AND n.name = @notiName";
-                command.Parameters.AddWithValue("@appName", appName);
-                command.Parameters.AddWithValue("@contName", contName);
-                command.Parameters.AddWithValue("@notiName", notiName);
-                command.CommandType = System.Data.CommandType.Text;
-                command.Connection = connection;
-
-                SqlDataReader reader = command.ExecuteReader();
-                if (reader.Read())
+            List<Notification> results = _dbHandler.ExecuteQuery(query, parameters, reader =>
+                new Notification
                 {
-                    n = new Notification();
-                    n.Id = (int)reader["id"];
-                    n.Name = (string)reader["name"];
-                    n.CreationDatetime = (DateTime)reader["creation_datetime"];
-                    n.Parent = (int)reader["parent"];
-                    n.Event = (int)reader["event"];
-                    n.Endpoint = (string)reader["endpoint"];
-                    n.Enabled = (bool)reader["enabled"];
+                    Id = (int)reader["id"],
+                    Name = (string)reader["name"],
+                    CreationDatetime = (DateTime)reader["creation_datetime"],
+                    Parent = (int)reader["parent"],
+                    Event = (int)reader["event"],
+                    Endpoint = (string)reader["endpoint"],
+                    Enabled = (bool)reader["enabled"]
                 }
-                reader.Close();
-                return Ok(n);
+            );
 
-            }
-            catch (Exception)
-            {
-                return NotFound();
-            }
-            finally
-            {
-                try
-                {
-                    connection.Close();
-                }
-                catch
-                {
+            if (results.Any())
+                return Ok(results.First());
 
-                }
-            }
+            return NotFound();
         }
 
     }
