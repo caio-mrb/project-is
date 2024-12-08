@@ -31,16 +31,16 @@ VALUES
 -- Insert into the records table
 INSERT INTO records (name, content, creation_datetime, parent)
 VALUES 
-('Record1', 'Data for Record1', '2024-12-01T12:00:00', 1),
-('Record2', 'Data for Record2', '2024-12-02T12:15:00', 2),
-('Record3', 'Data for Record3', '2024-12-03T12:30:00', 3),
-('Record4', 'Data for Record4', '2024-12-04T12:45:00', 4),
-('Record5', 'Data for Record5', '2024-12-05T13:00:00', 5),
-('Record6', 'Data for Record6', '2024-12-06T13:15:00', 6),
-('Record7', 'Data for Record7', '2024-12-07T13:30:00', 7),
-('Record8', 'Data for Record8', '2024-12-08T13:45:00', 8),
-('Record9', 'Data for Record9', '2024-12-09T14:00:00', 9),
-('Record10', 'Data for Record10', '2024-12-10T14:15:00', 10);
+('Data1', 'Data for Record1', '2024-12-01T12:00:00', 1),
+('Data2', 'Data for Record2', '2024-12-02T12:15:00', 2),
+('Data3', 'Data for Record3', '2024-12-03T12:30:00', 3),
+('Data4', 'Data for Record4', '2024-12-04T12:45:00', 4),
+('Data5', 'Data for Record5', '2024-12-05T13:00:00', 5),
+('Data6', 'Data for Record6', '2024-12-06T13:15:00', 6),
+('Data7', 'Data for Record7', '2024-12-07T13:30:00', 7),
+('Data8', 'Data for Record8', '2024-12-08T13:45:00', 8),
+('Data9', 'Data for Record9', '2024-12-09T14:00:00', 9),
+('Data10', 'Data for Record10', '2024-12-10T14:15:00', 10);
 
 -- Insert into the notifications table
 INSERT INTO notifications (name, creation_datetime, parent, event, endpoint, enabled)
