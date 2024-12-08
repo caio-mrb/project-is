@@ -1,6 +1,6 @@
 # Build Folders (you can keep bin if you'd like, to store dlls and pdbs)
-[Bb]in/
-[Oo]bj/
+# [Bb]in/
+# [Oo]bj/
 
 # Logs
 Logs/
@@ -86,7 +86,7 @@ publish
 *.Publish.xml
 
 # NuGet Packages Directory
-packages
+# packages
 
 # Windows Azure Build Output
 csx
@@ -96,8 +96,8 @@ csx
 AppPackages/
 
 # Others
-[Bb]in
-[Oo]bj
+# [Bb]in
+# [Oo]bj
 sql
 [Tt]est[Rr]esult*
 *.Cache
