@@ -26,8 +26,8 @@ namespace Api.Properties {
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.SpecialSettingAttribute(global::System.Configuration.SpecialSetting.ConnectionString)]
-        [global::System.Configuration.DefaultSettingValueAttribute("Data Source=localhost;Initial Catalog=SOMIOD;Integrated Security=True;Encrypt=Fal" +
-            "se")]
+        [global::System.Configuration.DefaultSettingValueAttribute("Data Source=localhost;Initial Catalog=SOMIOD;Integrated Security=True;Encrypt=Tru" +
+            "e;Trust Server Certificate=True")]
         public string ConnStr {
             get {
                 return ((string)(this["ConnStr"]));
