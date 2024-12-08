@@ -18,7 +18,7 @@ namespace Api.Controllers
         string connectionString = Api.Properties.Settings.Default.ConnStr;
 
         [HttpGet]
-        [Route("{notiName}")]
+        [Route("notification/{notiName}")]
         public IHttpActionResult GetNotification(string appName, string contName, string notiName)
         {
             Notification n = null;
