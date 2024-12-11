@@ -1,10 +1,11 @@
 ﻿using System;
+using System.Xml.Serialization;
 
 namespace Api.Models
 {
-    public class Record : BaseModel
+    public class Record : ChildModel
     {
+        [XmlElement("Content")]
         public string Content { get; set; }
-        public int Parent { get; set; }
     }
 }

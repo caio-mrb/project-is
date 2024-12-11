@@ -4,9 +4,8 @@ using System.Xml.Serialization;
 namespace Api.Models
 {
     [XmlRoot("Container")]
-    public class Container : BaseModel
+    public class Container : ChildModel
     {
-        [XmlElement("Parent")]
-        public int Parent { get; set; }
+
     }
 }

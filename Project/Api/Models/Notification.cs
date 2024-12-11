@@ -1,12 +1,17 @@
 ﻿using System;
+using System.Xml.Serialization;
 
 namespace Api.Models
 {
-    public class Notification : BaseModel
+    public class Notification : ChildModel
     {
-        public int Parent { get; set; }
+        [XmlElement("Event")]
         public int Event { get; set; }
+
+        [XmlElement("Endpoint")]
         public string Endpoint { get; set; }
+
+        [XmlElement("Enabled")]
         public bool? Enabled { get; set; }
     }
 }

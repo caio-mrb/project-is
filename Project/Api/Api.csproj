@@ -282,6 +282,7 @@
     </Compile>
     <Compile Include="Models\Application.cs" />
     <Compile Include="Models\BaseModel.cs" />
+    <Compile Include="Models\ChildModel.cs" />
     <Compile Include="Models\Container.cs" />
     <Compile Include="Models\Notification.cs" />
     <Compile Include="Models\Record.cs" />

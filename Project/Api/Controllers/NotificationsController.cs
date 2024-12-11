@@ -50,7 +50,7 @@ namespace Api.Controllers
 
         [HttpPost]
         [Route("")]
-        public IHttpActionResult PostNotification(string appName, string contName, [FromBody] Notification request)
+        public IHttpActionResult PostNotification(string appName, string contName, [FromBody] Api.Models.Notification request)
         {
             var validationResult = ValidateRequest(request, "notification");
             if (validationResult != null) return validationResult;
