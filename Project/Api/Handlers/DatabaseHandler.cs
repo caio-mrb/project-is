@@ -65,33 +65,6 @@ public class DatabaseHandler
         }
     }
 
-    public string GenerateUniqueName(string baseName)
-    {
-        int counter = 1;
-
-        while (true)
-        {
-            string candidateName = $"{baseName}{counter}";
-
-            string checkQuery = "SELECT COUNT(1) FROM dbo.applications WHERE name = @name";
-            var parameters = new List<SqlParameter>
-            {
-                new SqlParameter("@name", candidateName)
-            };
-
-            int existingCount = ExecuteQuery(checkQuery,parameters, reader =>
-                (int)reader[0]
-            ).FirstOrDefault();
-
-            if (existingCount == 0)
-            {
-                return candidateName;
-            }
-
-            counter++;
-        }
-    }
-
 
 
     public List<Dictionary<string, object>> ExecuteDynamicQuery(string query, List<SqlParameter> parameters, List<string> columns)

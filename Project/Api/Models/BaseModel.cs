@@ -5,6 +5,9 @@ namespace Api.Models
 {
     public abstract class BaseModel
     {
+        [XmlElement("ResType")]
+        public string ResType { get; set; }
+
         [XmlElement("Id")]
         public int Id { get; set; }
 
@@ -14,7 +17,5 @@ namespace Api.Models
         [XmlElement("CreationDatetime")]
         public DateTime CreationDatetime { get; set; }
 
-        [XmlElement("ResType")]
-        public string ResType { get; set; }
     }
 }

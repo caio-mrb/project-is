@@ -7,6 +7,6 @@ namespace Api.Models
         public int Parent { get; set; }
         public int Event { get; set; }
         public string Endpoint { get; set; }
-        public bool Enabled { get; set; }
+        public bool? Enabled { get; set; }
     }
 }

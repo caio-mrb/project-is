@@ -269,8 +269,11 @@
     <Compile Include="App_Start\RouteConfig.cs" />
     <Compile Include="App_Start\WebApiConfig.cs" />
     <Compile Include="Controllers\ApplicationsController.cs" />
+    <Compile Include="Controllers\BaseController.cs" />
+    <Compile Include="Controllers\ChildController.cs" />
+    <Compile Include="Controllers\ParentController.cs" />
     <Compile Include="Controllers\ContainersController.cs" />
-    <Compile Include="Controllers\DatabaseHandler.cs" />
+    <Compile Include="Handlers\DatabaseHandler.cs" />
     <Compile Include="Controllers\NotificationsController.cs" />
     <Compile Include="Controllers\RecordsController.cs" />
     <Compile Include="Controllers\SomiodController.cs" />
@@ -391,6 +394,7 @@
   <ItemGroup>
     <Folder Include="App_Data\" />
     <Folder Include="Data\" />
+    <Folder Include="Helpers\" />
     <Folder Include="Views\Applications\" />
     <Folder Include="Views\Containers\" />
     <Folder Include="Views\Notifications\" />

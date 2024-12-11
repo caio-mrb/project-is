@@ -9,81 +9,29 @@ using System.Web.Http;
 
 namespace Api.Controllers
 {
-    [RoutePrefix("api/somiod/{appName}")]
-    public class ApplicationsController : ApiController
+    [RoutePrefix("api/somiod")]
+    public class ApplicationsController : ParentController
     {
-        private readonly DatabaseHandler _dbHandler = new DatabaseHandler();
-
-        private string GetSomiodLocate()
-        {
-            return Request.Headers.Contains("somiod-locate")
-                ? Request.Headers.GetValues("somiod-locate").FirstOrDefault()
-                : null;
-        }
 
         [HttpGet]
-        [Route("")]
+        [Route("{appName}")]
         public IHttpActionResult SomiodLocateHandler(string appName)
         {
             string somiodLocate = GetSomiodLocate();
 
-            if (somiodLocate == null)
-                return GetApplication(appName);
-
-            switch (somiodLocate)
-            {
-                case "container":
-                case "notification":
-                case "record":
-                    return GetAllNames(appName, somiodLocate);
-                default:
-                    return BadRequest("Invalid somiod-locate value");
-            }
-        }
-
-        public IHttpActionResult GetApplication(string appName)
-        {
-            string query = "SELECT * FROM dbo.applications WHERE name = @appName";
-            var parameters = new List<SqlParameter>
-            {
-                new SqlParameter("@appName", appName)
-            };
-
-            List<Application> results = _dbHandler.ExecuteQuery(query, parameters, reader =>
-                new Application
-                {
-                    Id = (int)reader["id"],
-                    Name = (string)reader["name"],
-                    CreationDatetime = (DateTime)reader["creation_datetime"]
-                }
+            return HandleSomiodLocate(
+                somiodLocate,
+                defaultAction: () => GetApplication(appName),
+                getAllNamesAction: (name, contName, locate) =>
+                    GetAllNamesBase(locate, new List<SqlParameter>
+                    {
+                        new SqlParameter("@appName", name)
+                    }),
+                appName: appName
             );
-
-            if (results.Any())
-                return Ok(results.First());
-            
-            return NotFound();
-            
-
         }
 
-        public IHttpActionResult GetAllNames(string appName, string somiodLocate)
-        {
-            string query = GetCommandText(somiodLocate);
-            if (string.IsNullOrEmpty(query)) return BadRequest("Invalid somiod-locate value");
-
-            var parameters = new List<SqlParameter>
-            {
-                new SqlParameter("@appName", appName)
-            };
-
-            List<string> results = _dbHandler.ExecuteQuery(query, parameters, reader =>
-                reader["name"].ToString()
-            );
-
-            return Ok(results);
-        }
-
-        public string GetCommandText(string somiodLocate)
+        protected override string GetCommandText(string somiodLocate)
         {
             switch (somiodLocate)
             {
@@ -110,5 +58,71 @@ namespace Api.Controllers
             }
         }
 
+        public IHttpActionResult GetApplication(string appName)
+        {
+            string query = @"
+                           SELECT *
+                           FROM dbo.applications
+                           WHERE name = @appName";
+            var parameters = new List<SqlParameter>
+            {
+                new SqlParameter("@appName", appName)
+            };
+
+            return GetEntity(query, parameters, reader => new Application
+            {
+                Id = (int)reader["id"],
+                Name = (string)reader["name"],
+                CreationDatetime = (DateTime)reader["creation_datetime"],
+                ResType = "application"
+            });
+        }
+
+        [HttpPost]
+        [Route("")]
+        public IHttpActionResult PostApplication([FromBody] Application request)
+        {
+            var validationResult = ValidateRequest(request, "application");
+            if (validationResult != null) return validationResult;
+
+            if (string.IsNullOrEmpty(request.Name))
+            {
+                request.Name = GenerateUniqueName("App", "applications");
+            }
+            else
+            {
+                string checkQuery = @"
+                                    SELECT COUNT(1)
+                                    FROM dbo.applications
+                                    WHERE name = @appName";
+                var checkParameters = new List<SqlParameter>
+                {
+                    new SqlParameter("@appName", request.Name)
+                };
+
+                if (CheckIfExists(checkQuery, checkParameters) > 0)
+                    return BadRequest("An application with this name already exists.");
+            }
+
+            if (request.CreationDatetime == DateTime.MinValue)
+                request.CreationDatetime = DateTime.UtcNow;
+
+            string insertQuery = @"
+                                 INSERT INTO dbo.applications (name, creation_datetime)
+                                 VALUES (@appName, @creationDatetime)";
+            var insertParameters = new List<SqlParameter>
+            {
+                new SqlParameter("@appName", request.Name),
+                new SqlParameter("@creationDatetime", request.CreationDatetime)
+            };
+
+            return ExecuteInsert(insertQuery, insertParameters,
+                "Application created successfully.",
+                "Failed to create application.");
+        }
+
+
+
+        
     }
 }
