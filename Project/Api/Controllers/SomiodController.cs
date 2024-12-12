@@ -159,16 +159,16 @@ namespace Api.Controllers
             var validationResult = ValidateRequest(request, "application");
             if (validationResult != null) return validationResult;
 
-            string query = @"
+            string queryOld = @"
                            SELECT *
                            FROM dbo.applications
                            WHERE name = @appName";
-            var parameters = new List<SqlParameter>
+            var parametersOld = new List<SqlParameter>
             {
                 new SqlParameter("@appName", appName)
             };
 
-            Application oldApp = GetEntity(query, parameters, reader => new Application
+            Application oldApp = GetEntity(queryOld, parametersOld, reader => new Application
             {
                 Id = (int)reader["id"],
                 Name = (string)reader["name"],
@@ -178,6 +178,12 @@ namespace Api.Controllers
 
             if (oldApp == null)
                 return BadRequest("Unable to find this application.");
+
+            if (request.Id <= 0)
+                request.Id = oldApp.Id;
+
+            if (request.Id != oldApp.Id)
+                return BadRequest("Invalid application id.");
 
             if (string.IsNullOrEmpty(request.Name))
                 request.Name = oldApp.Name;
@@ -200,12 +206,12 @@ namespace Api.Controllers
             if (request.CreationDatetime == DateTime.MinValue)
                 request.CreationDatetime = oldApp.CreationDatetime;
 
-            if (request == oldApp)
+            if (request.isEqualTo(oldApp))
                 return BadRequest("Nothing to update in this application.");
 
             string insertQuery = @"
                                  UPDATE dbo.applications
-                                 SET (@appName, @creationDatetime)
+                                 SET name = @appName, creation_datetime = @creationDatetime
                                  WHERE id = @oldAppId";
             var insertParameters = new List<SqlParameter>
             {
@@ -215,8 +221,8 @@ namespace Api.Controllers
             };
 
             return ExecuteInsert(insertQuery, insertParameters,
-                "Application created successfully.",
-                "Failed to create application.");
+                "Application updated successfully.",
+                "Failed to update application.");
         }
 
         #endregion

@@ -17,5 +17,13 @@ namespace Api.Models
         [XmlElement("CreationDatetime")]
         public DateTime CreationDatetime { get; set; }
 
+
+        public bool isEqualTo(BaseModel other)
+        {
+            return (this.ResType == other.ResType
+                && this.Id == other.Id
+                && this.Name == other.Name
+                && this.CreationDatetime == other.CreationDatetime);
+        }
     }
 }
