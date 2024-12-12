@@ -7,10 +7,12 @@ using System.Web.Http;
 
 namespace Api.Controllers
 {
-    public abstract class ParentController : BaseController
+    public class ParentController : BaseController
     {
         public static readonly HashSet<string> AvailableSomiodLocates = new HashSet<string>
         {
+            //Don't edit the location order, cause will break existent code.
+            //If you need to add a new location, insert it below the last one!!
             "application",
             "container",
             "notification",
@@ -48,7 +50,8 @@ namespace Api.Controllers
 
         protected IHttpActionResult GetAllNamesBase(
             string somiodLocate,
-            List<SqlParameter> parameters)
+            List<SqlParameter> parameters,
+            Func<string, string> GetCommandText)
         {
             string query = GetCommandText(somiodLocate);
             if (string.IsNullOrEmpty(query))
@@ -60,7 +63,5 @@ namespace Api.Controllers
 
             return Ok(results);
         }
-
-        protected abstract string GetCommandText(string somiodLocate);
     }
 }

@@ -32,7 +32,7 @@ namespace Api.Controllers
                 new SqlParameter("@recName", recName)
             };
 
-            return GetEntity(query, parameters, reader =>
+            return GetEntityHttpAnswer(query, parameters, reader =>
                 new Record
                 {
                     Id = (int)reader["id"],
@@ -47,7 +47,7 @@ namespace Api.Controllers
 
         [HttpPost]
         [Route("")]
-        public IHttpActionResult PostNotification(string appName, string contName, [FromBody] Record request)
+        public IHttpActionResult PostRecord(string appName, string contName, [FromBody] Record request)
         {
             var validationResult = ValidateRequest(request, "record");
             if (validationResult != null) return validationResult;

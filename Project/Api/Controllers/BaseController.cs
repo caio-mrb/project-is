@@ -1,8 +1,10 @@
 ﻿using Api.Models;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Linq;
+using System.Runtime.Remoting.Metadata.W3cXsd2001;
 using System.Web;
 using System.Web.Http;
 
@@ -12,15 +14,26 @@ namespace Api.Controllers
     {
         protected readonly DatabaseHandler _dbHandler = new DatabaseHandler();
 
-        protected IHttpActionResult GetEntity<T>(
+        protected T GetEntity<T>(
             string query,
             List<SqlParameter> parameters,
             Func<SqlDataReader, T> mapEntity)
         {
             List<T> results = _dbHandler.ExecuteQuery(query, parameters, mapEntity);
 
-            if (results.Any())
-                return Ok(results.First());
+            return results.FirstOrDefault();
+        }
+
+
+        protected IHttpActionResult GetEntityHttpAnswer<T>(
+            string query,
+            List<SqlParameter> parameters,
+            Func<SqlDataReader, T> mapEntity)
+        {
+            var entity = GetEntity(query, parameters, mapEntity);
+
+            if (entity != null)
+                return Ok(entity);
 
             return NotFound();
         }

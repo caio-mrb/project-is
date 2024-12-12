@@ -33,7 +33,7 @@ namespace Api.Controllers
                 new SqlParameter("@notiName", notiName)
             };
 
-            return GetEntity(query, parameters, reader =>
+            return GetEntityHttpAnswer(query, parameters, reader =>
                 new Notification
                 {
                     Id = (int)reader["id"],
