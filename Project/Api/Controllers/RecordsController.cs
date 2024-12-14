@@ -39,8 +39,7 @@ namespace Api.Controllers
                     Name = (string)reader["name"],
                     Content = (string)reader["content"],
                     CreationDatetime = (DateTime)reader["creation_datetime"],
-                    Parent = (int)reader["parent"],
-                    ResType = "record"
+                    Parent = (int)reader["parent"]
                 }
             );
         }
@@ -49,7 +48,7 @@ namespace Api.Controllers
         [Route("")]
         public IHttpActionResult PostRecord(string appName, string contName, [FromBody] Record request)
         {
-            var validationResult = ValidateRequest(request, "record");
+            var validationResult = ValidateRequest(request);
             if (validationResult != null) return validationResult;
 
 

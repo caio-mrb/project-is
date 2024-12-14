@@ -65,9 +65,9 @@ namespace Api.Controllers
             }
         }
 
-        protected IHttpActionResult ValidateRequest<T>(T request, string expectedResType) where T : BaseModel
+        protected IHttpActionResult ValidateRequest<T>(T request) where T : BaseModel
         {
-            if (request == null || request.ResType != expectedResType || string.IsNullOrEmpty(request.ResType))
+            if (request == null)
             {
                 return BadRequest("Invalid request body.");
             }

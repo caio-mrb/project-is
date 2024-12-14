@@ -42,8 +42,7 @@ namespace Api.Controllers
                     Parent = (int)reader["parent"],
                     Event = (int)reader["event"],
                     Endpoint = (string)reader["endpoint"],
-                    Enabled = (bool)reader["enabled"],
-                    ResType = "notification"
+                    Enabled = (bool)reader["enabled"]
                 }
             );
         }
@@ -52,7 +51,7 @@ namespace Api.Controllers
         [Route("")]
         public IHttpActionResult PostNotification(string appName, string contName, [FromBody] Api.Models.Notification request)
         {
-            var validationResult = ValidateRequest(request, "notification");
+            var validationResult = ValidateRequest(request);
             if (validationResult != null) return validationResult;
 
             if(request.Event != 1 && request.Event != 2)

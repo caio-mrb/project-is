@@ -104,8 +104,7 @@ namespace Api.Controllers
             {
                 Id = (int)reader["id"],
                 Name = (string)reader["name"],
-                CreationDatetime = (DateTime)reader["creation_datetime"],
-                ResType = "application"
+                CreationDatetime = (DateTime)reader["creation_datetime"]
             });
         }
 
@@ -113,7 +112,7 @@ namespace Api.Controllers
         [Route("")]
         public IHttpActionResult PostApplication([FromBody] Application request)
         {
-            var validationResult = ValidateRequest(request, "application");
+            var validationResult = ValidateRequest(request);
             if (validationResult != null) return validationResult;
 
             if (string.IsNullOrEmpty(request.Name))
@@ -156,7 +155,7 @@ namespace Api.Controllers
         [Route("{appName}")]
         public IHttpActionResult PatchApplication(string appName, [FromBody] Application request)
         {
-            var validationResult = ValidateRequest(request, "application");
+            var validationResult = ValidateRequest(request);
             if (validationResult != null) return validationResult;
 
             string queryOld = @"
@@ -172,8 +171,7 @@ namespace Api.Controllers
             {
                 Id = (int)reader["id"],
                 Name = (string)reader["name"],
-                CreationDatetime = (DateTime)reader["creation_datetime"],
-                ResType = "application"
+                CreationDatetime = (DateTime)reader["creation_datetime"]
             });
 
             if (oldApp == null)
@@ -268,8 +266,7 @@ namespace Api.Controllers
                 Id = (int)reader["id"],
                 Name = (string)reader["name"],
                 CreationDatetime = (DateTime)reader["creation_datetime"],
-                Parent = (int)reader["parent"],
-                ResType = "container"
+                Parent = (int)reader["parent"]
             });
         }
 
@@ -299,7 +296,7 @@ namespace Api.Controllers
         [Route("{appName}")]
         public IHttpActionResult PostContainer(string appName, [FromBody] Container request)
         {
-            var validationResult = ValidateRequest(request, "container");
+            var validationResult = ValidateRequest(request);
             if (validationResult != null) return validationResult;
 
             string parentQuery = @"
