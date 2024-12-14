@@ -15,7 +15,7 @@ namespace Api
             // Web API routes
             config.MapHttpAttributeRoutes();
 
-            config.Formatters.XmlFormatter.SupportedMediaTypes.Add(new MediaTypeHeaderValue("application/xml"));
+            config.Formatters.XmlFormatter.UseXmlSerializer = true;
 
             config.Routes.MapHttpRoute(
                 name: "SOMIOD",
