@@ -12,7 +12,7 @@ CREATE TABLE containers (
     id INT IDENTITY(1,1) PRIMARY KEY,
     name VARCHAR(255) UNIQUE NOT NULL,
     creation_datetime DATETIME NOT NULL,
-    parent INT NOT NULL REFERENCES applications(id)
+    parent INT NOT NULL REFERENCES applications(id) ON DELETE CASCADE
 );
 
 -- Records Table
@@ -21,7 +21,7 @@ CREATE TABLE records (
     name VARCHAR(255) UNIQUE NOT NULL,
     content TEXT NOT NULL,
     creation_datetime DATETIME NOT NULL,
-    parent INT NOT NULL REFERENCES containers(id)
+    parent INT NOT NULL REFERENCES containers(id) ON DELETE CASCADE
 );
 
 -- Notifications Table
@@ -29,7 +29,7 @@ CREATE TABLE notifications (
     id INT IDENTITY(1,1) PRIMARY KEY,
     name VARCHAR(255) UNIQUE NOT NULL,
     creation_datetime DATETIME NOT NULL,
-    parent INT NOT NULL REFERENCES containers(id),
+    parent INT NOT NULL REFERENCES containers(id) ON DELETE CASCADE,
     event INT NOT NULL CHECK (event IN (1,2)), --1=create 2=delete
     endpoint VARCHAR(255) NOT NULL,
     enabled BIT NOT NULL
