@@ -3,16 +3,16 @@ USE SOMIOD;
 -- Insert into the applications table
 INSERT INTO applications (name, creation_datetime)
 VALUES 
-('App1', '2024-12-01T10:00:00'),
-('App2', '2024-12-02T10:15:00'),
-('App3', '2024-12-03T10:30:00'),
-('App4', '2024-12-04T10:45:00'),
-('App5', '2024-12-05T11:00:00'),
-('App6', '2024-12-06T11:15:00'),
-('App7', '2024-12-07T11:30:00'),
-('App8', '2024-12-08T11:45:00'),
-('App9', '2024-12-09T12:00:00'),
-('App10', '2024-12-10T12:15:00');
+('Application1', '2024-12-01T10:00:00'),
+('Application2', '2024-12-02T10:15:00'),
+('Application3', '2024-12-03T10:30:00'),
+('Application4', '2024-12-04T10:45:00'),
+('Application5', '2024-12-05T11:00:00'),
+('Application6', '2024-12-06T11:15:00'),
+('Application7', '2024-12-07T11:30:00'),
+('Application8', '2024-12-08T11:45:00'),
+('Application9', '2024-12-09T12:00:00'),
+('Application10', '2024-12-10T12:15:00');
 
 -- Insert into the containers table
 INSERT INTO containers (name, creation_datetime, parent)
@@ -31,16 +31,16 @@ VALUES
 -- Insert into the records table
 INSERT INTO records (name, content, creation_datetime, parent)
 VALUES 
-('Data1', 'Data for Record1', '2024-12-01T12:00:00', 1),
-('Data2', 'Data for Record2', '2024-12-02T12:15:00', 2),
-('Data3', 'Data for Record3', '2024-12-03T12:30:00', 3),
-('Data4', 'Data for Record4', '2024-12-04T12:45:00', 4),
-('Data5', 'Data for Record5', '2024-12-05T13:00:00', 5),
-('Data6', 'Data for Record6', '2024-12-06T13:15:00', 6),
-('Data7', 'Data for Record7', '2024-12-07T13:30:00', 7),
-('Data8', 'Data for Record8', '2024-12-08T13:45:00', 8),
-('Data9', 'Data for Record9', '2024-12-09T14:00:00', 9),
-('Data10', 'Data for Record10', '2024-12-10T14:15:00', 10);
+('Record1', 'Data for Record1', '2024-12-01T12:00:00', 1),
+('Record2', 'Data for Record2', '2024-12-02T12:15:00', 2),
+('Record3', 'Data for Record3', '2024-12-03T12:30:00', 3),
+('Record4', 'Data for Record4', '2024-12-04T12:45:00', 4),
+('Record5', 'Data for Record5', '2024-12-05T13:00:00', 5),
+('Record6', 'Data for Record6', '2024-12-06T13:15:00', 6),
+('Record7', 'Data for Record7', '2024-12-07T13:30:00', 7),
+('Record8', 'Data for Record8', '2024-12-08T13:45:00', 8),
+('Record9', 'Data for Record9', '2024-12-09T14:00:00', 9),
+('Record10', 'Data for Record10', '2024-12-10T14:15:00', 10);
 
 -- Insert into the notifications table
 INSERT INTO notifications (name, creation_datetime, parent, event, endpoint, enabled)
