@@ -22,9 +22,9 @@ namespace Api.Controllers
         {
             string query = @"
                             SELECT * 
-                            FROM dbo.notifications n
-                            JOIN dbo.containers c ON n.parent = c.id
-                            JOIN dbo.applications a ON c.parent = a.id
+                            FROM " + new Notification().GetDatabase() + @" n
+                            JOIN " + new Container().GetDatabase() + @" c ON n.parent = c.id
+                            JOIN " + new Application().GetDatabase() + @" a ON c.parent = a.id
                             WHERE a.name = @appName AND c.name = @contName AND n.name = @notiName";
             var parameters = new List<SqlParameter>
             {
@@ -63,16 +63,7 @@ namespace Api.Controllers
             if (!request.Enabled.HasValue)
                 return BadRequest("Enabled field can't be empty. Must be True or False.");
 
-            string parentQuery = @"
-                                 SELECT id
-                                 FROM dbo.containers
-                                 WHERE name = @contName";
-            var parentParameters = new List<SqlParameter>
-            {
-                new SqlParameter("@contName", contName)
-            };
-
-            var parentId = CheckIfExists(parentQuery, parentParameters);
+            var parentId = CheckIfExists(new Container { Name = contName });
 
             if (parentId <= 0)
                 return BadRequest("Unable to find this container.");
@@ -85,20 +76,11 @@ namespace Api.Controllers
 
             if (string.IsNullOrEmpty(request.Name))
             {
-                request.Name = GenerateUniqueName("Notification", "notifications");
+                request.Name = GenerateUniqueName(request);
             }
             else
             {
-                string checkQuery = @"
-                                    SELECT COUNT(1)
-                                    FROM dbo.notifications
-                                    WHERE name = @notiName";
-                var checkParameters = new List<SqlParameter>
-                {
-                    new SqlParameter("@notiName", request.Name)
-                };
-
-                if (CheckIfExists(checkQuery, checkParameters) > 0)
+                if (CheckIfExists(request) > 0)
                     return BadRequest("A notification with this name already exists.");
             }
 
@@ -106,7 +88,7 @@ namespace Api.Controllers
                 request.CreationDatetime = DateTime.UtcNow;
 
             string insertQuery = @"
-                                 INSERT INTO dbo.notifications (name, creation_datetime, parent, event, endpoint, enabled)
+                                 INSERT INTO " + request.GetDatabase() + @" (name, creation_datetime, parent, event, endpoint, enabled)
                                  VALUES (@notiName, @creationDatetime, @parentId, @event, @endpoint, @enabled)";
             var insertParameters = new List<SqlParameter>
             {
@@ -118,7 +100,7 @@ namespace Api.Controllers
                 new SqlParameter("@enabled", request.Enabled)
             };
 
-            return ExecuteInsert(insertQuery, insertParameters,
+            return ExecuteWithMessage(insertQuery, insertParameters,
                 "Notification created successfully.",
                 "Failed to create notification.");
         }

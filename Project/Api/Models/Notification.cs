@@ -1,4 +1,7 @@
-﻿namespace Api.Models
+﻿using Api.Controllers;
+using System.Collections.Generic;
+
+namespace Api.Models
 {
     public class Notification : ChildModel
     {
@@ -14,6 +17,13 @@
                 && this.Event == other.Event
                 && this.Endpoint == other.Endpoint
                 && this.Enabled == other.Enabled);
+        }
+
+        public override string GetResType()
+        {
+            List<string> locateList = new List<string>(BaseController.AvailableSomiodLocates);
+
+            return locateList[2];
         }
     }
 }

@@ -1,6 +1,6 @@
 ﻿namespace Api.Models
 {
-    public class ChildModel : BaseModel
+    public abstract class ChildModel : BaseModel
     {
         public int Parent { get; set; }
 

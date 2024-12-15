@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Data.Entity.Design.PluralizationServices;
+using System.Globalization;
 
 namespace Api.Models
 {
@@ -15,5 +17,15 @@ namespace Api.Models
                 && this.Name == other.Name
                 && this.CreationDatetime == other.CreationDatetime);
         }
+
+        public string GetDatabase()
+        {
+            PluralizationService pluralizationService = PluralizationService.CreateService(new CultureInfo("en-US"));
+
+
+            return "dbo." + pluralizationService.Pluralize(GetResType());
+        }
+
+        public abstract string GetResType();
     }
 } 

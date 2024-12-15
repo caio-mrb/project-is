@@ -9,21 +9,7 @@ namespace Api.Controllers
 {
     public class ParentController : BaseController
     {
-        public static readonly HashSet<string> AvailableSomiodLocates = new HashSet<string>
-        {
-            //Don't edit the location order, cause will break existent code.
-            //If you need to add a new location, insert it below the last one!!
-            "application",
-            "container",
-            "notification",
-            "record"
-        };
-
-        public static bool IsValidSomiodLocate(string somiodLocate)
-        {
-            return AvailableSomiodLocates.Contains(somiodLocate);
-        }
-
+       
         protected string GetSomiodLocate()
         {
             return Request.Headers.Contains("somiod-locate")

@@ -1,17 +1,18 @@
 ﻿using Api.Models;
 using System;
 using System.Collections.Generic;
-using System.Data;
 using System.Data.SqlClient;
-using System.Linq;
-using System.Web;
+using System.Globalization;
 using System.Web.Http;
+using System.Data.Entity.Design.PluralizationServices;
 
 namespace Api.Controllers
 {
     [RoutePrefix("api/somiod")]
     public class SomiodController : ParentController
     {
+        PluralizationService pluralizationService = PluralizationService.CreateService(new CultureInfo("en-US"));
+
         #region Somiod
 
         [HttpGet]
@@ -30,11 +31,28 @@ namespace Api.Controllers
 
         public string GetSomiodCommandText(string somiodLocate)
         {
-            string database = somiodLocate + "s";
+            List<string> locateList = new List<string>(AvailableSomiodLocates);
+
+            string database = null;
+
+            if (somiodLocate == locateList[0])
+                database = new Application().GetDatabase();
+
+            if (somiodLocate == locateList[1])
+                database = new Container().GetDatabase();
+
+            if (somiodLocate == locateList[2])
+                database = new Notification().GetDatabase();
+
+            if (somiodLocate == locateList[3])
+                database = new Record().GetDatabase();
+
+            if(database == null)
+                return null;
 
             return @"
-                    SELECT name
-                    FROM dbo." + database;
+                   SELECT name
+                   FROM " + database;
         }
 
         #endregion
@@ -45,6 +63,9 @@ namespace Api.Controllers
         [Route("{appName}")]
         public IHttpActionResult SomiodLocateHandler(string appName)
         {
+            if (CheckIfExists(new Application {Name = appName}) <= 0)
+                return BadRequest("Unable to find this application.");
+
             string somiodLocate = GetSomiodLocate();
 
             return HandleSomiodLocate(
@@ -64,25 +85,25 @@ namespace Api.Controllers
         {
             List<string> locateList = new List<string>(AvailableSomiodLocates);
 
-            if(somiodLocate == locateList[1])
+            if (somiodLocate == locateList[1])
                 return @"
                        SELECT c.name
-                       FROM dbo.containers c
-                       JOIN dbo.applications a ON c.parent = a.id
+                       FROM " + new Container().GetDatabase() + @" c
+                       JOIN " + new Application().GetDatabase() + @" a ON c.parent = a.id
                        WHERE a.name = @appName";
 
             if (somiodLocate == locateList[2])
                 return @"SELECT n.name
-                       FROM dbo.notifications n
-                       JOIN dbo.containers c ON n.parent = c.id
-                       JOIN dbo.applications a ON c.parent = a.id
+                       FROM " + new Notification().GetDatabase() + @" n
+                       JOIN " + new Container().GetDatabase() + @" c ON n.parent = c.id
+                       JOIN " + new Application().GetDatabase() + @" a ON c.parent = a.id
                        WHERE a.name = @appName";
 
             if (somiodLocate == locateList[3])
                 return @"SELECT r.name 
-                       FROM dbo.records r
-                       JOIN dbo.containers c ON r.parent = c.id
-                       JOIN dbo.applications a ON c.parent = a.id
+                       FROM " + new Record().GetDatabase() + @" r
+                       JOIN " + new Container().GetDatabase() + @" c ON r.parent = c.id
+                       JOIN " + new Application().GetDatabase() + @" a ON c.parent = a.id
                        WHERE a.name = @appName";
                 
              return null;
@@ -93,7 +114,7 @@ namespace Api.Controllers
         {
             string query = @"
                            SELECT *
-                           FROM dbo.applications
+                           FROM " + new Application().GetDatabase() + @"
                            WHERE name = @appName";
             var parameters = new List<SqlParameter>
             {
@@ -117,20 +138,11 @@ namespace Api.Controllers
 
             if (string.IsNullOrEmpty(request.Name))
             {
-                request.Name = GenerateUniqueName("App", "applications");
+                request.Name = GenerateUniqueName(request);
             }
             else
             {
-                string checkQuery = @"
-                                    SELECT COUNT(1)
-                                    FROM dbo.applications
-                                    WHERE name = @appName";
-                var checkParameters = new List<SqlParameter>
-                {
-                    new SqlParameter("@appName", request.Name)
-                };
-
-                if (CheckIfExists(checkQuery, checkParameters) > 0)
+                if (CheckIfExists(request) > 0)
                     return BadRequest("An application with this name already exists.");
             }
 
@@ -138,7 +150,7 @@ namespace Api.Controllers
                 request.CreationDatetime = DateTime.UtcNow;
 
             string insertQuery = @"
-                                 INSERT INTO dbo.applications (name, creation_datetime)
+                                 INSERT INTO " + request.GetDatabase() + @" (name, creation_datetime)
                                  VALUES (@appName, @creationDatetime)";
             var insertParameters = new List<SqlParameter>
             {
@@ -146,7 +158,7 @@ namespace Api.Controllers
                 new SqlParameter("@creationDatetime", request.CreationDatetime)
             };
 
-            return ExecuteInsert(insertQuery, insertParameters,
+            return ExecuteWithMessage(insertQuery, insertParameters,
                 "Application created successfully.",
                 "Failed to create application.");
         }
@@ -160,7 +172,7 @@ namespace Api.Controllers
 
             string queryOld = @"
                            SELECT *
-                           FROM dbo.applications
+                           FROM " + new Application().GetDatabase() + @"
                            WHERE name = @appName";
             var parametersOld = new List<SqlParameter>
             {
@@ -188,16 +200,7 @@ namespace Api.Controllers
 
             if (request.Name != oldApp.Name)
             {
-                string checkQuery = @"
-                                    SELECT COUNT(1)
-                                    FROM dbo.applications
-                                    WHERE name = @appName";
-                var checkParameters = new List<SqlParameter>
-                {
-                    new SqlParameter("@appName", request.Name)
-                };
-
-                if (CheckIfExists(checkQuery, checkParameters) > 0)
+                if (CheckIfExists(request) > 0)
                     return BadRequest("An application with this name already exists.");
             }
 
@@ -208,7 +211,7 @@ namespace Api.Controllers
                 return BadRequest("Nothing to update in this application.");
 
             string insertQuery = @"
-                                 UPDATE dbo.applications
+                                 UPDATE " + new Application().GetDatabase() + @"
                                  SET name = @appName, creation_datetime = @creationDatetime
                                  WHERE id = @oldAppId";
             var insertParameters = new List<SqlParameter>
@@ -218,9 +221,30 @@ namespace Api.Controllers
                 new SqlParameter("@oldAppId", oldApp.Id)
             };
 
-            return ExecuteInsert(insertQuery, insertParameters,
+            return ExecuteWithMessage(insertQuery, insertParameters,
                 "Application updated successfully.",
                 "Failed to update application.");
+        }
+
+        [HttpDelete]
+        [Route("{appName}")]
+        public IHttpActionResult DeleteApplication(string appName)
+        {
+            if (CheckIfExists(new Application {Name = appName}) <= 0)
+                return BadRequest("Unable to find this application.");
+
+            string deleteQuery = @"
+                           DELETE
+                           FROM " + new Application().GetDatabase() + @"
+                           WHERE name = @appName";
+            var deleteParameters = new List<SqlParameter>
+            {
+                new SqlParameter("@appName", appName)
+            };
+
+            return ExecuteWithMessage(deleteQuery, deleteParameters,
+                "Application deleted successfully.",
+                "Failed to delete application.");
         }
 
         #endregion
@@ -231,6 +255,9 @@ namespace Api.Controllers
         [Route("{appName}/{contName}")]
         public IHttpActionResult SomiodLocateHandler(string appName, string contName)
         {
+            var dontExistResut = CheckIfContainerDontExists(appName, contName);
+            if (dontExistResut != null) return dontExistResut;
+            
             string somiodLocate = GetSomiodLocate();
 
             return HandleSomiodLocate(
@@ -248,12 +275,46 @@ namespace Api.Controllers
             );
         }
 
+        public IHttpActionResult CheckIfContainerDontExists(string appName, string contName)
+        {
+            var parentId = CheckIfExists(new Application { Name = appName });
+
+            if (parentId <= 0)
+                return BadRequest("Unable to find this application.");
+
+            string query = @"
+                            SELECT *
+                            FROM " + new Container().GetDatabase() + @" c
+                            JOIN " + new Application().GetDatabase() + @" a ON c.parent = a.id
+                            WHERE a.name = @appName AND c.name = @contName";
+            var parameters = new List<SqlParameter>
+            {
+                new SqlParameter("@appName", appName),
+                new SqlParameter("@contName", contName)
+            };
+
+            Container container = GetEntity(query, parameters, reader => new Container
+            {
+                Id = (int)reader["id"],
+                Name = (string)reader["name"],
+                CreationDatetime = (DateTime)reader["creation_datetime"],
+                Parent = (int)reader["parent"]
+            });
+
+            if (container == null)
+            {
+                return BadRequest("Unable to find this container.");
+            }
+
+            return null;
+        }
+
         public IHttpActionResult GetContainer(string appName, string contName)
         {
             string query = @"
                             SELECT *
-                            FROM dbo.containers c
-                            JOIN dbo.applications a ON c.parent = a.id
+                            FROM " + new Container().GetDatabase() + @" c
+                            JOIN " + new Application().GetDatabase() + @" a ON c.parent = a.id
                             WHERE a.name = @appName AND c.name = @contName";
             var parameters = new List<SqlParameter>
             {
@@ -276,16 +337,16 @@ namespace Api.Controllers
 
             if(somiodLocate == locateList[2])
                     return @"SELECT n.name
-                    FROM dbo.notifications n
-                    JOIN dbo.containers c ON n.parent = c.id
-                    JOIN dbo.applications a ON c.parent = a.id
+                    FROM " + new Notification().GetDatabase() + @" n
+                    JOIN " + new Container().GetDatabase() + @" c ON n.parent = c.id
+                    JOIN " + new Application().GetDatabase() + @" a ON c.parent = a.id
                     WHERE a.name = @appName AND c.name = @contName";
 
             if (somiodLocate == locateList[3])
                 return @"SELECT r.name 
-                    FROM dbo.records r
-                    JOIN dbo.containers c ON r.parent = c.id
-                    JOIN dbo.applications a ON c.parent = a.id
+                    FROM " + new Record().GetDatabase() + @" r
+                    JOIN " + new Container().GetDatabase() + @" c ON r.parent = c.id
+                    JOIN " + new Application().GetDatabase() + @" a ON c.parent = a.id
                     WHERE a.name = @appName AND c.name = @contName";
 
             return null;
@@ -299,16 +360,7 @@ namespace Api.Controllers
             var validationResult = ValidateRequest(request);
             if (validationResult != null) return validationResult;
 
-            string parentQuery = @"
-                                 SELECT id
-                                 FROM dbo.applications
-                                 WHERE name = @appName";
-            var parentParameters = new List<SqlParameter>
-            {
-                new SqlParameter("@appName", appName)
-            };
-
-            var parentId = CheckIfExists(parentQuery, parentParameters);
+            var parentId = CheckIfExists(new Application {Name = appName});
 
             if (parentId <= 0)
                 return BadRequest("Unable to find this application.");
@@ -321,20 +373,11 @@ namespace Api.Controllers
 
             if (string.IsNullOrEmpty(request.Name))
             {
-                request.Name = GenerateUniqueName("Container", "containers");
+                request.Name = GenerateUniqueName(request);
             }
             else
             {
-                string checkQuery = @"
-                                    SELECT COUNT(1)
-                                    FROM dbo.containers
-                                    WHERE name = @contName";
-                var checkParameters = new List<SqlParameter>
-                {
-                    new SqlParameter("@contName", request.Name)
-                };
-
-                if (CheckIfExists(checkQuery, checkParameters) > 0)
+                if (CheckIfExists(request) > 0)
                     return BadRequest("A container with this name already exists.");
             }
 
@@ -342,7 +385,7 @@ namespace Api.Controllers
                 request.CreationDatetime = DateTime.UtcNow;
 
             string insertQuery = @"
-                                 INSERT INTO dbo.containers (name, creation_datetime, parent)
+                                 INSERT INTO " + new Container().GetDatabase() + @" (name, creation_datetime, parent)
                                  VALUES (@contName, @creationDatetime, @parentId)";
             var insertParameters = new List<SqlParameter>
             {
@@ -351,11 +394,32 @@ namespace Api.Controllers
                 new SqlParameter("@parentId", request.Parent)
             };
 
-            return ExecuteInsert(insertQuery, insertParameters,
+            return ExecuteWithMessage(insertQuery, insertParameters,
                 "Container created successfully.",
                 "Failed to create container.");
         }
 
+
+        [HttpDelete]
+        [Route("{appName}/{contName}")]
+        public IHttpActionResult DeleteContainer(string appName, string contName)
+        {
+            var dontExistResut = CheckIfContainerDontExists(appName, contName);
+            if (dontExistResut != null) return dontExistResut;
+
+            string deleteQuery = @"
+                           DELETE
+                           FROM " + new Container().GetDatabase() + @"
+                           WHERE name = @contName";
+            var deleteParameters = new List<SqlParameter>
+            {
+                new SqlParameter("@contName", contName)
+            };
+
+            return ExecuteWithMessage(deleteQuery, deleteParameters,
+                "Container deleted successfully.",
+                "Failed to delete container.");
+        }
         #endregion
 
     }
