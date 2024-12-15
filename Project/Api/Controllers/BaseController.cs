@@ -16,11 +16,6 @@ namespace Api.Controllers
     public class BaseController : ApiController
     {
         /// <summary>
-        /// Database handler instance for executing database queries.
-        /// </summary>
-        protected readonly DatabaseHandler _dbHandler = new DatabaseHandler();
-
-        /// <summary>
         /// A set of available Somiod locations. The order must not be changed to maintain backward compatibility.
         /// </summary>
         public static readonly HashSet<string> AvailableSomiodLocates = new HashSet<string>
@@ -51,12 +46,12 @@ namespace Api.Controllers
         /// <param name="parameters">List of SQL parameters to include in the query.</param>
         /// <param name="mapEntity">A function to map the SqlDataReader to the entity type.</param>
         /// <returns>The first entity found, or null if none exists.</returns>
-        protected T GetEntity<T>(
+        protected static T GetEntity<T>(
             string query,
             List<SqlParameter> parameters,
             Func<SqlDataReader, T> mapEntity)
         {
-            List<T> results = _dbHandler.ExecuteQuery(query, parameters, mapEntity);
+            List<T> results = DatabaseHandler.ExecuteQuery(query, parameters, mapEntity);
 
             return results.FirstOrDefault();
         }
@@ -131,7 +126,7 @@ namespace Api.Controllers
         /// <typeparam name="T">The type of the entity.</typeparam>
         /// <param name="entity">The entity to check.</param>
         /// <returns>The ID of the entity if it exists; otherwise, 0.</returns>
-        protected int CheckIfExists<T>(T entity) where T : BaseModel
+        protected static int CheckIfExists<T>(T entity) where T : BaseModel
         {
             bool hasEntityName = !string.IsNullOrEmpty(entity.Name);
 
@@ -146,7 +141,7 @@ namespace Api.Controllers
             if (hasEntityName)
                 checkParameters.Add(new SqlParameter("@name", entity.Name));
 
-            return _dbHandler.ExecuteQuery(checkQuery, checkParameters, reader => (int)reader[0]).FirstOrDefault();
+            return DatabaseHandler.ExecuteQuery(checkQuery, checkParameters, reader => (int)reader[0]).FirstOrDefault();
         }
 
         /// <summary>
@@ -161,7 +156,7 @@ namespace Api.Controllers
         {
             try
             {
-                int rowsAffected = _dbHandler.ExecuteNonQuery(query, parameters);
+                int rowsAffected = DatabaseHandler.ExecuteNonQuery(query, parameters);
 
                 if (rowsAffected > 0)
                 {

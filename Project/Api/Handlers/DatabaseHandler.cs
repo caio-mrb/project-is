@@ -4,23 +4,18 @@ using System.Data;
 using System.Data.SqlClient;
 using System.Linq;
 
-public class DatabaseHandler
+public static class DatabaseHandler
 {
-    private readonly string _connectionString;
+    private static readonly string _connectionString = Api.Properties.Settings.Default.ConnStr;
 
-    public DatabaseHandler()
-    {
-        _connectionString = Api.Properties.Settings.Default.ConnStr;
-    }
-
-    private SqlConnection GetSqlConnection()
+    private static SqlConnection GetSqlConnection()
     {
         SqlConnection connection = new SqlConnection(_connectionString);
         connection.Open();
         return connection;
     }
 
-    public List<T> ExecuteQuery<T>(string query, List<SqlParameter> parameters, Func<SqlDataReader, T> selector)
+    public static List<T> ExecuteQuery<T>(string query, List<SqlParameter> parameters, Func<SqlDataReader, T> selector)
     {
         using (SqlConnection connection = GetSqlConnection())
         {
@@ -46,7 +41,7 @@ public class DatabaseHandler
         }
     }
 
-    public int ExecuteNonQuery(string query, List<SqlParameter> parameters)
+    public static int ExecuteNonQuery(string query, List<SqlParameter> parameters)
     {
         using (SqlConnection connection = GetSqlConnection())
         {
@@ -67,7 +62,7 @@ public class DatabaseHandler
 
 
 
-    public List<Dictionary<string, object>> ExecuteDynamicQuery(string query, List<SqlParameter> parameters, List<string> columns)
+    public static List<Dictionary<string, object>> ExecuteDynamicQuery(string query, List<SqlParameter> parameters, List<string> columns)
     {
         using (SqlConnection connection = GetSqlConnection())
         {

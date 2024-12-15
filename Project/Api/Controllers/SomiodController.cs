@@ -278,7 +278,7 @@ namespace Api.Controllers
             );
         }
 
-        public (int, Container) GetExistentContainer(string appName, string contName)
+        public static (int, Container) GetExistentContainer(string appName, string contName)
         {
             var parentId = CheckIfExists(new Application { Name = appName });
 

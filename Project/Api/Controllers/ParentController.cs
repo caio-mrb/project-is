@@ -43,7 +43,7 @@ namespace Api.Controllers
             if (string.IsNullOrEmpty(query))
                 return BadRequest("Invalid somiod-locate value");
 
-            List<string> results = _dbHandler.ExecuteQuery(query, parameters, reader =>
+            List<string> results = DatabaseHandler.ExecuteQuery(query, parameters, reader =>
                 reader["name"].ToString()
             );
 

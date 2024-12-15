@@ -1,14 +1,10 @@
 ﻿using Api.Models;
 using System;
 using System.Collections.Generic;
-using System.Data;
 using System.Data.SqlClient;
-using System.Linq;
-using System.Net;
-using System.Net.Http;
-using System.Web;
 using System.Web.Http;
-using System.Xml.Linq;
+using System.Web.Management;
+using System.Web.Routing;
 
 namespace Api.Controllers
 {
@@ -20,6 +16,29 @@ namespace Api.Controllers
         [Route("{notiName}")]
         public IHttpActionResult GetNotification(string appName, string contName, string notiName)
         {
+
+            (int parentId, int parentParentId, Notification notification) = GetExistentNotification(appName, contName, notiName);
+
+            if(parentParentId <= 0)
+                return BadRequest("Unable to find this application.");
+
+            if(parentId <= 0)
+                return BadRequest("Unable to find this container.");
+
+            if (notification == null)
+                return BadRequest("Unable to find this notification.");
+            return Ok(notification);
+        }
+
+        public (int,int,Notification) GetExistentNotification(string appName, string contName, string notiName)
+        {
+            (int parentParentId, Container container) = SomiodController.GetExistentContainer(appName, contName);
+
+            if (parentParentId == 0 || container == null)
+                return (0, parentParentId, null);
+
+            int parentId = container.Id;
+
             string query = @"
                             SELECT * 
                             FROM " + new Notification().GetDatabase() + @" n
@@ -33,7 +52,7 @@ namespace Api.Controllers
                 new SqlParameter("@notiName", notiName)
             };
 
-            return GetEntityHttpAnswer(query, parameters, reader =>
+            Notification notification = GetEntity(query, parameters, reader =>
                 new Notification
                 {
                     Id = (int)reader["id"],
@@ -45,11 +64,14 @@ namespace Api.Controllers
                     Enabled = (bool)reader["enabled"]
                 }
             );
+
+            return (parentId, parentParentId, notification);
+
         }
 
         [HttpPost]
         [Route("")]
-        public IHttpActionResult PostNotification(string appName, string contName, [FromBody] Api.Models.Notification request)
+        public IHttpActionResult PostNotification(string appName, string contName, [FromBody] Notification request)
         {
             var validationResult = ValidateRequest(request);
             if (validationResult != null) return validationResult;
@@ -105,5 +127,34 @@ namespace Api.Controllers
                 "Failed to create notification.");
         }
 
+
+        [HttpDelete]
+        [Route("{notiName}")]
+        public IHttpActionResult DeleteNotification(string appName, string contName, string notiName)
+        {
+            (int parentId, int parentParentId, Notification notification) = GetExistentNotification(appName, contName, notiName);
+
+            if (parentParentId <= 0)
+                return BadRequest("Unable to find this application");
+
+            if (parentId <= 0)
+                return BadRequest("Unable to find this container");
+
+            if (notification == null)
+                return BadRequest("Unable to find this notification.");
+
+            string deleteQuery = @"
+                           DELETE
+                           FROM " + new Notification().GetDatabase() + @"
+                           WHERE name = @notiName";
+            var deleteParameters = new List<SqlParameter>
+            {
+                new SqlParameter("@notiName", notiName)
+            };
+
+            return ExecuteWithMessage(deleteQuery, deleteParameters,
+                "Notification deleted successfully.",
+                "Failed to delete notification.");
+        }
     }
 }
