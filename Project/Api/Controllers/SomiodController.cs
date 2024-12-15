@@ -81,6 +81,26 @@ namespace Api.Controllers
             );
         }
 
+        public Application GetExistentApplication(string appName)
+        {
+            string query = @"
+                           SELECT *
+                           FROM " + new Application().GetDatabase() + @"
+                           WHERE name = @appName";
+            var parameters = new List<SqlParameter>
+            {
+                new SqlParameter("@appName", appName)
+            };
+
+            return GetEntity(query, parameters, reader => new Application
+                            {
+                                Id = (int)reader["id"],
+                                Name = (string)reader["name"],
+                                CreationDatetime = (DateTime)reader["creation_datetime"]
+                            });
+
+        }
+
         public string GetApplicationCommandText(string somiodLocate)
         {
             List<string> locateList = new List<string>(AvailableSomiodLocates);
@@ -112,21 +132,12 @@ namespace Api.Controllers
 
         public IHttpActionResult GetApplication(string appName)
         {
-            string query = @"
-                           SELECT *
-                           FROM " + new Application().GetDatabase() + @"
-                           WHERE name = @appName";
-            var parameters = new List<SqlParameter>
-            {
-                new SqlParameter("@appName", appName)
-            };
+            Application application = GetExistentApplication(appName);
 
-            return GetEntityHttpAnswer(query, parameters, reader => new Application
-            {
-                Id = (int)reader["id"],
-                Name = (string)reader["name"],
-                CreationDatetime = (DateTime)reader["creation_datetime"]
-            });
+            if (application == null)
+                return BadRequest("Unable to find this application");
+
+            return Ok(application);
         }
 
         [HttpPost]
@@ -134,7 +145,8 @@ namespace Api.Controllers
         public IHttpActionResult PostApplication([FromBody] Application request)
         {
             var validationResult = ValidateRequest(request);
-            if (validationResult != null) return validationResult;
+            if (validationResult != null)
+                return validationResult;
 
             if (string.IsNullOrEmpty(request.Name))
             {
@@ -170,21 +182,7 @@ namespace Api.Controllers
             var validationResult = ValidateRequest(request);
             if (validationResult != null) return validationResult;
 
-            string queryOld = @"
-                           SELECT *
-                           FROM " + new Application().GetDatabase() + @"
-                           WHERE name = @appName";
-            var parametersOld = new List<SqlParameter>
-            {
-                new SqlParameter("@appName", appName)
-            };
-
-            Application oldApp = GetEntity(queryOld, parametersOld, reader => new Application
-            {
-                Id = (int)reader["id"],
-                Name = (string)reader["name"],
-                CreationDatetime = (DateTime)reader["creation_datetime"]
-            });
+            Application oldApp = GetExistentApplication(appName);
 
             if (oldApp == null)
                 return BadRequest("Unable to find this application.");
@@ -211,7 +209,7 @@ namespace Api.Controllers
                 return BadRequest("Nothing to update in this application.");
 
             string insertQuery = @"
-                                 UPDATE " + new Application().GetDatabase() + @"
+                                 UPDATE " + request.GetDatabase() + @"
                                  SET name = @appName, creation_datetime = @creationDatetime
                                  WHERE id = @oldAppId";
             var insertParameters = new List<SqlParameter>
@@ -255,8 +253,13 @@ namespace Api.Controllers
         [Route("{appName}/{contName}")]
         public IHttpActionResult SomiodLocateHandler(string appName, string contName)
         {
-            var dontExistResut = CheckIfContainerDontExists(appName, contName);
-            if (dontExistResut != null) return dontExistResut;
+            (int parentId,Container container) = GetExistentContainer(appName, contName);
+
+            if (parentId <= 0)
+                return BadRequest("Unable to find this application.");
+
+            if (container == null) 
+                return BadRequest("Unable to find this container.");
             
             string somiodLocate = GetSomiodLocate();
 
@@ -275,12 +278,12 @@ namespace Api.Controllers
             );
         }
 
-        public IHttpActionResult CheckIfContainerDontExists(string appName, string contName)
+        public (int, Container) GetExistentContainer(string appName, string contName)
         {
             var parentId = CheckIfExists(new Application { Name = appName });
 
             if (parentId <= 0)
-                return BadRequest("Unable to find this application.");
+                return (0,null);
 
             string query = @"
                             SELECT *
@@ -294,41 +297,25 @@ namespace Api.Controllers
             };
 
             Container container = GetEntity(query, parameters, reader => new Container
-            {
-                Id = (int)reader["id"],
-                Name = (string)reader["name"],
-                CreationDatetime = (DateTime)reader["creation_datetime"],
-                Parent = (int)reader["parent"]
-            });
+                                            {
+                                                Id = (int)reader["id"],
+                                                Name = (string)reader["name"],
+                                                CreationDatetime = (DateTime)reader["creation_datetime"],
+                                                Parent = (int)reader["parent"]
+                                            });
 
-            if (container == null)
-            {
-                return BadRequest("Unable to find this container.");
-            }
+            return (parentId, container);
 
-            return null;
         }
 
         public IHttpActionResult GetContainer(string appName, string contName)
         {
-            string query = @"
-                            SELECT *
-                            FROM " + new Container().GetDatabase() + @" c
-                            JOIN " + new Application().GetDatabase() + @" a ON c.parent = a.id
-                            WHERE a.name = @appName AND c.name = @contName";
-            var parameters = new List<SqlParameter>
-            {
-                new SqlParameter("@appName", appName),
-                new SqlParameter("@contName", contName)
-            };
+            (_, Container container) = GetExistentContainer(appName,contName);
 
-            return GetEntityHttpAnswer(query, parameters, reader => new Container
-            {
-                Id = (int)reader["id"],
-                Name = (string)reader["name"],
-                CreationDatetime = (DateTime)reader["creation_datetime"],
-                Parent = (int)reader["parent"]
-            });
+            if (container == null)
+                return BadRequest("Unable to find this container.");
+
+            return Ok(container);
         }
 
         public string GetContainerCommandText(string somiodLocate)
@@ -385,7 +372,7 @@ namespace Api.Controllers
                 request.CreationDatetime = DateTime.UtcNow;
 
             string insertQuery = @"
-                                 INSERT INTO " + new Container().GetDatabase() + @" (name, creation_datetime, parent)
+                                 INSERT INTO " + request.GetDatabase() + @" (name, creation_datetime, parent)
                                  VALUES (@contName, @creationDatetime, @parentId)";
             var insertParameters = new List<SqlParameter>
             {
@@ -399,13 +386,77 @@ namespace Api.Controllers
                 "Failed to create container.");
         }
 
+        [HttpPatch]
+        [Route("{appName}/{contName}")]
+        public IHttpActionResult PatchContainer(string appName, string contName, [FromBody] Container request)
+        {
+            var validationResult = ValidateRequest(request);
+            if (validationResult != null) return validationResult;
+
+            (int parentId,Container oldCont) = GetExistentContainer(appName, contName);
+
+            if (parentId <= 0)
+                return BadRequest("Unable to find this application.");
+
+            if (request.Parent == 0)
+                request.Parent = parentId;
+
+            if(CheckIfExists(new Application { Id = request.Parent }) <= 0)
+                return BadRequest("Unable to find new parent application.");
+
+            if (oldCont == null)
+                return BadRequest("Unable to find this container.");
+
+            if (request.Id <= 0)
+                request.Id = oldCont.Id;
+
+            if (request.Id != oldCont.Id)
+                return BadRequest("Invalid container id.");
+
+            if (string.IsNullOrEmpty(request.Name))
+                request.Name = oldCont.Name;
+
+            if (request.Name != oldCont.Name)
+            {
+                if (CheckIfExists(request) > 0)
+                    return BadRequest("An container with this name already exists.");
+            }
+
+            if (request.CreationDatetime == DateTime.MinValue)
+                request.CreationDatetime = oldCont.CreationDatetime;
+
+            if (request.isEqualTo(oldCont))
+                return BadRequest("Nothing to update in this container.");
+
+            string insertQuery = @"
+                                 UPDATE " + request.GetDatabase() + @"
+                                 SET name = @contName, creation_datetime = @creationDatetime, parent = @parent
+                                 WHERE id = @oldContId";
+            var insertParameters = new List<SqlParameter>
+            {
+                new SqlParameter("@contName", request.Name),
+                new SqlParameter("@creationDatetime", request.CreationDatetime),
+                new SqlParameter("@oldContId", oldCont.Id),
+                new SqlParameter("@parent", request.Parent)
+            };
+
+            return ExecuteWithMessage(insertQuery, insertParameters,
+                "Container updated successfully.",
+                "Failed to update container.");
+        }
+
 
         [HttpDelete]
         [Route("{appName}/{contName}")]
         public IHttpActionResult DeleteContainer(string appName, string contName)
         {
-            var dontExistResut = CheckIfContainerDontExists(appName, contName);
-            if (dontExistResut != null) return dontExistResut;
+            (int parentId, Container container) = GetExistentContainer(appName, contName);
+
+            if(parentId <= 0)
+                return BadRequest("Unable to find this application.");
+
+            if (container == null)
+                return BadRequest("Unable to find this container.");
 
             string deleteQuery = @"
                            DELETE

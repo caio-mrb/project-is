@@ -2,8 +2,10 @@
 using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
+using System.Globalization;
 using System.Linq;
 using System.Web.Http;
+using System.Xml.Linq;
 
 namespace Api.Controllers
 {
@@ -88,11 +90,14 @@ namespace Api.Controllers
         /// <returns>A unique name not found in the specified table.</returns>
         public string GenerateUniqueName<T>(T entity) where T : BaseModel
         {
+            TextInfo textInfo = new CultureInfo("en-US", false).TextInfo;
+
             int counter = 1;
 
             while (true)
             {
-                string candidateName = $"{entity.GetResType()}{counter}";
+                
+                string candidateName = $"{textInfo.ToTitleCase(entity.GetResType())}{counter}";
 
                 entity.Name = candidateName;
 
@@ -128,15 +133,18 @@ namespace Api.Controllers
         /// <returns>The ID of the entity if it exists; otherwise, 0.</returns>
         protected int CheckIfExists<T>(T entity) where T : BaseModel
         {
+            bool hasEntityName = !string.IsNullOrEmpty(entity.Name);
 
             string checkQuery = @"
                                 SELECT id
                                 FROM " + entity.GetDatabase() + @"
-                                WHERE name = @name";
+                                WHERE " + (hasEntityName ? "name = @name OR " : "") + @"id = @id";
             var checkParameters = new List<SqlParameter>
             {
-                new SqlParameter("@name", entity.Name)
+                new SqlParameter("@id", entity.Id)
             };
+            if (hasEntityName)
+                checkParameters.Add(new SqlParameter("@name", entity.Name));
 
             return _dbHandler.ExecuteQuery(checkQuery, checkParameters, reader => (int)reader[0]).FirstOrDefault();
         }
