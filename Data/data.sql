@@ -3,16 +3,16 @@ USE SOMIOD;
 -- Insert into the applications table
 INSERT INTO applications (name, creation_datetime)
 VALUES 
-('App1', '2024-12-01T10:00:00'),
-('App2', '2024-12-02T10:15:00'),
-('App3', '2024-12-03T10:30:00'),
-('App4', '2024-12-04T10:45:00'),
-('App5', '2024-12-05T11:00:00'),
-('App6', '2024-12-06T11:15:00'),
-('App7', '2024-12-07T11:30:00'),
-('App8', '2024-12-08T11:45:00'),
-('App9', '2024-12-09T12:00:00'),
-('App10', '2024-12-10T12:15:00');
+('Application1', '2024-12-01T10:00:00'),
+('Application2', '2024-12-02T10:15:00'),
+('Application3', '2024-12-03T10:30:00'),
+('Application4', '2024-12-04T10:45:00'),
+('Application5', '2024-12-05T11:00:00'),
+('Application6', '2024-12-06T11:15:00'),
+('Application7', '2024-12-07T11:30:00'),
+('Application8', '2024-12-08T11:45:00'),
+('Application9', '2024-12-09T12:00:00'),
+('Application10', '2024-12-10T12:15:00');
 
 -- Insert into the containers table
 INSERT INTO containers (name, creation_datetime, parent)

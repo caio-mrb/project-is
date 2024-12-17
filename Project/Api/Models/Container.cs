@@ -1,12 +1,16 @@
-﻿using System;
+﻿using Api.Controllers;
+using System.Collections.Generic;
 
 namespace Api.Models
 {
-    public class Container
+    public class Container : ChildModel
     {
-        public int Id { get; set; }
-        public string Name { get; set; }
-        public DateTime CreationDatetime { get; set; }
-        public int Parent { get; set; }
+        public override string GetResType()
+        {
+            List<string> locateList = new List<string>(BaseController.AvailableSomiodLocates);
+
+            return locateList[1];
+        }
+
     }
 }

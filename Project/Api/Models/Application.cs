@@ -1,11 +1,15 @@
-﻿using System;
+﻿using System.Collections.Generic;
+using Api.Controllers;
 
 namespace Api.Models
 {
-    public class Application
+    public class Application : BaseModel
     {
-        public int Id { get; set; }
-        public string Name { get; set; }
-        public DateTime CreationDatetime { get; set; }
+        public override string GetResType()
+        {
+            List<string> locateList = new List<string>(BaseController.AvailableSomiodLocates);
+
+            return locateList[0];
+        }
     }
 }

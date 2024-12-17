@@ -1,13 +1,23 @@
-﻿using System;
+﻿using Api.Controllers;
+using System.Collections.Generic;
 
 namespace Api.Models
 {
-    public class Record
+    public class Record : ChildModel
     {
-        public int Id { get; set; }
-        public string Name { get; set; }
         public string Content { get; set; }
-        public DateTime CreationDatetime { get; set; }
-        public int Parent { get; set; }
+
+        public bool isEqualTo(Record other)
+        {
+            return (this.isEqualTo((ChildModel)other)
+                && this.Content == other.Content);
+        }
+
+        public override string GetResType()
+        {
+            List<string> locateList = new List<string>(BaseController.AvailableSomiodLocates);
+
+            return locateList[3];
+        }
     }
 }
