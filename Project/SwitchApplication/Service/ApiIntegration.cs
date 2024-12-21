@@ -21,7 +21,6 @@ namespace SwitchApplication.Service
                 string applicationUrl = baseUrl;
                 string creationDateTime = DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ss.fffZ");
                 string applicationBody = $"<Application>" +
-                    $"<Name>{applicationName}</Name>" +
                     $"^<CreationDateTime>{creationDateTime}</CreationDateTime>" +
                     $"</Application>";
                 await PostToApiAsync(applicationUrl, applicationBody);
@@ -43,10 +42,7 @@ namespace SwitchApplication.Service
                 string nameWithTimestamp = $"{applicationName}_{timestamp}";
                 string applicationBody =
                             $"<Record>" +
-                                $"<Name>{nameWithTimestamp}</Name>" +
                                 $"<Content>{recordValue}</Content>" +
-                                $"^<CreationDateTime>{creationDateTime}</CreationDateTime>" +
-                                $"<Parent>11</Parent>" +
                             $"</Record>";
                 string postUrl = baseUrl + $"/{applicationName}/{containerName}/record";
                 await PostToApiAsync(postUrl, applicationBody);

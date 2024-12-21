@@ -19,7 +19,7 @@ public class InitialConfiguration
             string applicationUrl = baseUrl;
             string creationDateTime = DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ss.fffZ");
             string applicationBody = $"<Application>" +
-                $"<Name>{applicationName}</Name>" +
+                $"<Name></Name>" +
                 $"^<CreationDateTime>{creationDateTime}</CreationDateTime>" +
                 $"</Application>";
             await PostToApiAsync(applicationUrl, applicationBody);
@@ -28,7 +28,7 @@ public class InitialConfiguration
             string containerName = "light_bulb";
             string containerUrl = $"{baseUrl}/{applicationName}";
             string containerBody = $"<Container>" +
-                $"<Name>{containerName}</Name>" +
+                $"<Name></Name>" +
                  $"^<CreationDateTime>{creationDateTime}</CreationDateTime>" +
                 $"</Container>";
             await PostToApiAsync(containerUrl, containerBody);
@@ -37,10 +37,10 @@ public class InitialConfiguration
             string notificationUrl = $"{baseUrl}/{applicationName}/{containerName}";
             string notificationBody = @"
                 <Notification>
-                    <Name>light_bulb_creation</Name>
-                    <Event>1</event>" +
+                    <Name></Name>
+                    <Event>Creation</Event>" +
                     $"^<CreationDateTime>{creationDateTime}</CreationDateTime>" +
-                    @"<Endpoint>http://localhost:5000/notify</Endpoint>
+                    @"<Endpoint>mqtt://localhost:5000/notify</Endpoint>
                     <Enabled>true</Enabled>
                 </Notification>";
             await PostToApiAsync(notificationUrl, notificationBody);
