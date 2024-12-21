@@ -1,4 +1,4 @@
-﻿using SmartLightApp.Services;
+﻿using SmartLightApp;
 using SmartLightApp.Properties;
 using System;
 using System.Collections.Generic;
@@ -89,11 +89,27 @@ namespace SmartLightApp
 
         private void button1_Click(object sender, EventArgs e)
         {
-            mClient.Connect(Guid.NewGuid().ToString());
-            if (!mClient.IsConnected)
+            if (mClient == null || !mClient.IsConnected)
             {
-                MessageBox.Show("Error connecting to message broker...");
-                return;
+                mClient.Connect(Guid.NewGuid().ToString());
+                if (!mClient.IsConnected)
+                {
+                    MessageBox.Show("Error connecting to message broker...");
+                    return;
+                }
+
+                mClient.MqttMsgPublishReceived -= MqttMsgPublishReceived;
+
+                mClient.MqttMsgPublishReceived += MqttMsgPublishReceived;
+
+                byte[] qosLevels = { 0 }; 
+                mClient.Subscribe(topics, qosLevels);
+
+                MessageBox.Show("Connected to broker and Subscribed to topic: light_bulb");
+            }
+            else
+            {
+                MessageBox.Show("Already connected to the broker.");
             }
         }
 
@@ -104,6 +120,7 @@ namespace SmartLightApp
                 mClient.Unsubscribe(topics);
                 mClient.Disconnect();
             }
+            MessageBox.Show($"Disconnected to broker");
         }
     }
 }
