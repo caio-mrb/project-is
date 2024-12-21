@@ -9,6 +9,8 @@ using System.Net.Http;
 using System.Web;
 using System.Web.Http;
 using System.Xml.Linq;
+using Api.Messaging;
+using System.Web.Services.Description;
 
 namespace Api.Controllers
 {
@@ -114,6 +116,8 @@ namespace Api.Controllers
                 new SqlParameter("@parentId", request.Parent),
                 new SqlParameter("@content", request.Content)
             };
+
+            WebApiApplication.MqttPublisher.PublishMessage(contName, request.Content);
 
             return ExecuteWithMessage(insertQuery, insertParameters,
                 "Record created successfully.",

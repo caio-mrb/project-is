@@ -4,9 +4,14 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace IoTScenario1.Models
+namespace SmartLightApp.Models
 {
-    internal class Record
+    public class Record
     {
+        public int Id { get; set; }
+        public string Name { get; set; }
+        public string Content { get; set; }
+        public DateTime CreationDatetime { get; set; }
+        public int Parent { get; set; }
     }
 }

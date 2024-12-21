@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace SmartLightApp
+namespace SwitchApplication
 {
     internal static class Program
     {
@@ -12,12 +12,11 @@ namespace SmartLightApp
         /// The main entry point for the application.
         /// </summary>
         [STAThread]
-        static async Task Main()
+        static void Main()
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-
-            Application.Run(new MainForm());
+            Application.Run(new Form1());
         }
     }
 }
