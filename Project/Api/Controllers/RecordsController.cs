@@ -11,6 +11,7 @@ using System.Web.Http;
 using System.Xml.Linq;
 using Api.Messaging;
 using System.Web.Services.Description;
+using System.Collections;
 
 namespace Api.Controllers
 {
@@ -56,7 +57,7 @@ namespace Api.Controllers
                 new SqlParameter("@recName", recName)
             };
 
-            Record record = GetEntity(query, parameters, reader =>
+            Record record = ExecuteEntityOperation(query, parameters, reader =>
                 new Record
                 {
                     Id = (int)reader["id"],
@@ -107,7 +108,8 @@ namespace Api.Controllers
                 request.CreationDatetime = DateTime.UtcNow;
 
             string insertQuery = @"
-                                 INSERT INTO "+ request.GetDatabase() +@" (name, creation_datetime, parent, content)
+                                 INSERT INTO "+ request.GetDatabase() + @" (name, creation_datetime, parent, content)
+                                 OUTPUT INSERTED.id, INSERTED.name, INSERTED.creation_datetime, INSERTED.parent, INSERTED.content
                                  VALUES (@notiName, @creationDatetime, @parentId, @content)";
             var insertParameters = new List<SqlParameter>
             {
@@ -119,9 +121,18 @@ namespace Api.Controllers
 
             WebApiApplication.MqttPublisher.PublishMessage(contName, request.Content);
 
-            return ExecuteWithMessage(insertQuery, insertParameters,
-                "Record created successfully.",
-                "Failed to create record.");
+            Record record = ExecuteEntityOperation(insertQuery, insertParameters, reader =>
+                new Record
+                {
+                    Id = (int)reader["id"],
+                    Name = (string)reader["name"],
+                    Content = (string)reader["content"],
+                    CreationDatetime = (DateTime)reader["creation_datetime"],
+                    Parent = (int)reader["parent"]
+                }
+            );
+
+            return Ok(record);
         }
 
         [HttpDelete]
@@ -148,7 +159,7 @@ namespace Api.Controllers
                 new SqlParameter("@recName", recName)
             };
 
-            return ExecuteWithMessage(deleteQuery, deleteParameters,
+            return ExecuteNonQueryWithMessage(deleteQuery, deleteParameters,
                 "Record deleted successfully.",
                 "Failed to delete record.");
         }

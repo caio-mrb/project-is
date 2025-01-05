@@ -46,7 +46,7 @@ namespace Api.Controllers
         /// <param name="parameters">List of SQL parameters to include in the query.</param>
         /// <param name="mapEntity">A function to map the SqlDataReader to the entity type.</param>
         /// <returns>The first entity found, or null if none exists.</returns>
-        protected static T GetEntity<T>(
+        protected static T ExecuteEntityOperation<T>(
             string query,
             List<SqlParameter> parameters,
             Func<SqlDataReader, T> mapEntity)
@@ -54,27 +54,6 @@ namespace Api.Controllers
             List<T> results = DatabaseHandler.ExecuteQuery(query, parameters, mapEntity);
 
             return results.FirstOrDefault();
-        }
-
-        /// <summary>
-        /// Retrieves an entity and returns it as an HTTP response. Returns 404 if the entity is not found.
-        /// </summary>
-        /// <typeparam name="T">The type of entity to retrieve.</typeparam>
-        /// <param name="query">The SQL query string.</param>
-        /// <param name="parameters">List of SQL parameters to include in the query.</param>
-        /// <param name="mapEntity">A function to map the SqlDataReader to the entity type.</param>
-        /// <returns>HTTP response containing the entity or a 404 error.</returns>
-        protected IHttpActionResult GetEntityHttpAnswer<T>(
-            string query,
-            List<SqlParameter> parameters,
-            Func<SqlDataReader, T> mapEntity)
-        {
-            var entity = GetEntity(query, parameters, mapEntity);
-
-            if (entity != null)
-                return Ok(entity);
-
-            return NotFound();
         }
 
         /// <summary>
@@ -152,7 +131,11 @@ namespace Api.Controllers
         /// <param name="successMessage">The message to return if the query succeeds.</param>
         /// <param name="failureMessage">The message to return if the query fails.</param>
         /// <returns>An HTTP response with the success or failure message.</returns>
-        protected IHttpActionResult ExecuteWithMessage(string query, List<SqlParameter> parameters, string successMessage, string failureMessage)
+        protected IHttpActionResult ExecuteNonQueryWithMessage(
+            string query,
+            List<SqlParameter> parameters,
+            string successMessage,
+            string failureMessage)
         {
             try
             {
@@ -160,6 +143,7 @@ namespace Api.Controllers
 
                 if (rowsAffected > 0)
                 {
+                    // If results exist, return them with a success message
                     return Ok(successMessage);
                 }
                 else

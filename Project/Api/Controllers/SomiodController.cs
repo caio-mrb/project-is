@@ -5,6 +5,7 @@ using System.Data.SqlClient;
 using System.Globalization;
 using System.Web.Http;
 using System.Data.Entity.Design.PluralizationServices;
+using System.Collections;
 
 namespace Api.Controllers
 {
@@ -92,7 +93,7 @@ namespace Api.Controllers
                 new SqlParameter("@appName", appName)
             };
 
-            return GetEntity(query, parameters, reader => new Application
+            return ExecuteEntityOperation(query, parameters, reader => new Application
                             {
                                 Id = (int)reader["id"],
                                 Name = (string)reader["name"],
@@ -163,6 +164,7 @@ namespace Api.Controllers
 
             string insertQuery = @"
                                  INSERT INTO " + request.GetDatabase() + @" (name, creation_datetime)
+                                 OUTPUT INSERTED.id, INSERTED.name, INSERTED.creation_datetime
                                  VALUES (@appName, @creationDatetime)";
             var insertParameters = new List<SqlParameter>
             {
@@ -170,9 +172,14 @@ namespace Api.Controllers
                 new SqlParameter("@creationDatetime", request.CreationDatetime)
             };
 
-            return ExecuteWithMessage(insertQuery, insertParameters,
-                "Application created successfully.",
-                "Failed to create application.");
+            Application application = ExecuteEntityOperation(insertQuery, insertParameters, reader => new Application
+                                        {
+                                            Id = (int)reader["id"],
+                                            Name = (string)reader["name"],
+                                            CreationDatetime = (DateTime)reader["creation_datetime"]
+                                        });
+
+            return Ok(application);
         }
 
         [HttpPatch]
@@ -219,7 +226,7 @@ namespace Api.Controllers
                 new SqlParameter("@oldAppId", oldApp.Id)
             };
 
-            return ExecuteWithMessage(insertQuery, insertParameters,
+            return ExecuteNonQueryWithMessage(insertQuery, insertParameters,
                 "Application updated successfully.",
                 "Failed to update application.");
         }
@@ -240,7 +247,7 @@ namespace Api.Controllers
                 new SqlParameter("@appName", appName)
             };
 
-            return ExecuteWithMessage(deleteQuery, deleteParameters,
+            return ExecuteNonQueryWithMessage(deleteQuery, deleteParameters,
                 "Application deleted successfully.",
                 "Failed to delete application.");
         }
@@ -296,7 +303,7 @@ namespace Api.Controllers
                 new SqlParameter("@contName", contName)
             };
 
-            Container container = GetEntity(query, parameters, reader => new Container
+            Container container = ExecuteEntityOperation(query, parameters, reader => new Container
                                             {
                                                 Id = (int)reader["id"],
                                                 Name = (string)reader["name"],
@@ -373,6 +380,7 @@ namespace Api.Controllers
 
             string insertQuery = @"
                                  INSERT INTO " + request.GetDatabase() + @" (name, creation_datetime, parent)
+                                 OUTPUT INSERTED.id, INSERTED.name, INSERTED.creation_datetime, INSERTED.parent
                                  VALUES (@contName, @creationDatetime, @parentId)";
             var insertParameters = new List<SqlParameter>
             {
@@ -381,9 +389,15 @@ namespace Api.Controllers
                 new SqlParameter("@parentId", request.Parent)
             };
 
-            return ExecuteWithMessage(insertQuery, insertParameters,
-                "Container created successfully.",
-                "Failed to create container.");
+            Container container = ExecuteEntityOperation(insertQuery, insertParameters, reader => new Container
+            {
+                Id = (int)reader["id"],
+                Name = (string)reader["name"],
+                CreationDatetime = (DateTime)reader["creation_datetime"],
+                Parent = (int)reader["parent"]
+            });
+
+            return Ok(container);
         }
 
         [HttpPatch]
@@ -440,7 +454,7 @@ namespace Api.Controllers
                 new SqlParameter("@parent", request.Parent)
             };
 
-            return ExecuteWithMessage(insertQuery, insertParameters,
+            return ExecuteNonQueryWithMessage(insertQuery, insertParameters,
                 "Container updated successfully.",
                 "Failed to update container.");
         }
@@ -467,7 +481,7 @@ namespace Api.Controllers
                 new SqlParameter("@contName", contName)
             };
 
-            return ExecuteWithMessage(deleteQuery, deleteParameters,
+            return ExecuteNonQueryWithMessage(deleteQuery, deleteParameters,
                 "Container deleted successfully.",
                 "Failed to delete container.");
         }

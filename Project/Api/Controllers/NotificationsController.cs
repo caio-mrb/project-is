@@ -1,5 +1,6 @@
 ﻿using Api.Models;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Web.Http;
@@ -52,7 +53,7 @@ namespace Api.Controllers
                 new SqlParameter("@notiName", notiName)
             };
 
-            Notification notification = GetEntity(query, parameters, reader =>
+            Notification notification = ExecuteEntityOperation(query, parameters, reader =>
                 new Notification
                 {
                     Id = (int)reader["id"],
@@ -111,6 +112,7 @@ namespace Api.Controllers
 
             string insertQuery = @"
                                  INSERT INTO " + request.GetDatabase() + @" (name, creation_datetime, parent, event, endpoint, enabled)
+                                 OUTPUT INSERTED.id, INSERTED.name, INSERTED.creation_datetime, INSERTED.parent, INSERTED.event, INSERTED.endpoint, INSERTED.enabled
                                  VALUES (@notiName, @creationDatetime, @parentId, @event, @endpoint, @enabled)";
             var insertParameters = new List<SqlParameter>
             {
@@ -122,9 +124,20 @@ namespace Api.Controllers
                 new SqlParameter("@enabled", request.Enabled)
             };
 
-            return ExecuteWithMessage(insertQuery, insertParameters,
-                "Notification created successfully.",
-                "Failed to create notification.");
+            Notification notification = ExecuteEntityOperation(insertQuery, insertParameters, reader =>
+                new Notification
+                {
+                    Id = (int)reader["id"],
+                    Name = (string)reader["name"],
+                    CreationDatetime = (DateTime)reader["creation_datetime"],
+                    Parent = (int)reader["parent"],
+                    Event = (int)reader["event"],
+                    Endpoint = (string)reader["endpoint"],
+                    Enabled = (bool)reader["enabled"]
+                }
+            );
+
+            return Ok(notification);
         }
 
 
@@ -152,7 +165,7 @@ namespace Api.Controllers
                 new SqlParameter("@notiName", notiName)
             };
 
-            return ExecuteWithMessage(deleteQuery, deleteParameters,
+            return ExecuteNonQueryWithMessage(deleteQuery, deleteParameters,
                 "Notification deleted successfully.",
                 "Failed to delete notification.");
         }
