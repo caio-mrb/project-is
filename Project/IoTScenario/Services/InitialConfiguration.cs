@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 
 public class InitialConfiguration
 {
@@ -14,33 +16,24 @@ public class InitialConfiguration
             // URL base da API do middleware
             string baseUrl = "http://localhost:60626/api/somiod";
 
-            // 1. Criar aplicação "Lighting"
+            // 1. Criar aplicação
             string applicationName = "Lighting";
             string applicationUrl = baseUrl;
-            string creationDateTime = DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ss.fffZ");
-            string applicationBody = $"<Application>" +
-                $"<Name></Name>" +
-                $"^<CreationDateTime>{creationDateTime}</CreationDateTime>" +
-                $"</Application>";
+            string applicationBody = $"<Application><Name>{applicationName}</Name></Application>";
             await PostToApiAsync(applicationUrl, applicationBody);
 
-            // 2. Criar container "light_bulb" na aplicação "Lighting"
-            string containerName = "light_bulb";
+            // 2. Criar container
+            string containerName = "Light_bulb";
             string containerUrl = $"{baseUrl}/{applicationName}";
-            string containerBody = $"<Container>" +
-                $"<Name></Name>" +
-                 $"^<CreationDateTime>{creationDateTime}</CreationDateTime>" +
-                $"</Container>";
+            string containerBody = $"<Container><Name>{containerName}</Name></Container>";
             await PostToApiAsync(containerUrl, containerBody);
 
              
             string notificationUrl = $"{baseUrl}/{applicationName}/{containerName}";
             string notificationBody = @"
                 <Notification>
-                    <Name></Name>
-                    <Event>Creation</Event>" +
-                    $"^<CreationDateTime>{creationDateTime}</CreationDateTime>" +
-                    @"<Endpoint>mqtt://localhost:5000/notify</Endpoint>
+                    <Event>Creation</Event>
+                    <Endpoint>mqtt://localhost:5000/notify</Endpoint>
                     <Enabled>true</Enabled>
                 </Notification>";
             await PostToApiAsync(notificationUrl, notificationBody);
@@ -55,13 +48,10 @@ public class InitialConfiguration
 
     private async Task PostToApiAsync(string url, string body)
     {
-        // Cria o conteúdo da requisição com o corpo XML
         StringContent content = new StringContent(body, Encoding.UTF8, "application/xml");
 
-        // Envia o POST para a API
         HttpResponseMessage response = await client.PostAsync(url, content);
 
-        // Verifica se a resposta foi bem-sucedida
         if (!response.IsSuccessStatusCode)
         {
             string error = await response.Content.ReadAsStringAsync();

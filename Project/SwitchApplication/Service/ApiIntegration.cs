@@ -16,13 +16,9 @@ namespace SwitchApplication.Service
         {     
             try
             {
-                // 1. Criar aplicação "Lighting"
-                string applicationName = "Switch";
+                // 1. Criar aplicação
                 string applicationUrl = baseUrl;
-                string creationDateTime = DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ss.fffZ");
-                string applicationBody = $"<Application>" +
-                    $"^<CreationDateTime>{creationDateTime}</CreationDateTime>" +
-                    $"</Application>";
+                string applicationBody = "<Application></Application>";
                 await PostToApiAsync(applicationUrl, applicationBody);
             }
             catch (Exception ex)
@@ -37,13 +33,10 @@ namespace SwitchApplication.Service
             {
                 string applicationName = "lighting";
                 string containerName = "light_bulb";
-                string creationDateTime = DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ss.fffZ");
-                string timestamp = DateTime.UtcNow.ToString("yyyyMMdd_HHmmss");  // Exemplo de timestamp no formato "yyyyMMdd_HHmmss"
-                string nameWithTimestamp = $"{applicationName}_{timestamp}";
                 string applicationBody =
-                            $"<Record>" +
-                                $"<Content>{recordValue}</Content>" +
-                            $"</Record>";
+                            $@"<Record>
+                                <Content>{recordValue}</Content>
+                            </Record>";
                 string postUrl = baseUrl + $"/{applicationName}/{containerName}/record";
                 await PostToApiAsync(postUrl, applicationBody);
             }

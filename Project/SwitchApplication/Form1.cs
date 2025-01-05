@@ -79,5 +79,10 @@ namespace SwitchApplication
             ApiIntegration apiIntegration = new ApiIntegration();
             _ = apiIntegration.SendRecordAsync("off");
         }
+
+        private void Form1_Load(object sender, EventArgs e)
+        {
+
+        }
     }
 }
